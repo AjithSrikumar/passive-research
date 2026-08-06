@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { DM_Sans } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -15,6 +16,17 @@ const dmSans = DM_Sans({
 const BASE_URL = "https://passive-research.in";
 
 const coverage = `${companies.length}+ Indian listed companies across ${sectors.length} sectors`;
+
+const theme = {
+  __html: `(function () {
+    try {
+      var stored = localStorage.getItem('passive-theme');
+      document.documentElement.classList.toggle('dark', stored !== 'light');
+    } catch (e) {
+      document.documentElement.classList.add('dark');
+    }
+  })();`,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -49,13 +61,14 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#111827",
+  themeColor: "#0b1220",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={dmSans.variable} suppressHydrationWarning>
       <body>
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: theme.__html }} />
         <Nav />
         {children}
         <Footer />

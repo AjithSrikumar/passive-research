@@ -1,21 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+const THEME_KEY = "passive-theme";
+
+function currentDark() {
+  return document.documentElement.classList.contains("dark");
+}
 
 export default function ThemeToggle() {
-  useEffect(() => {
-    const stored = localStorage.getItem("passive-theme");
-    if (stored === "dark") {
-      document.documentElement.classList.add("dark");
-    } else if (stored === "light") {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
   const toggle = () => {
-    const next = !document.documentElement.classList.contains("dark");
+    const next = !currentDark();
     document.documentElement.classList.toggle("dark", next);
-    localStorage.setItem("passive-theme", next ? "dark" : "light");
+    localStorage.setItem(THEME_KEY, next ? "dark" : "light");
   };
 
   return (

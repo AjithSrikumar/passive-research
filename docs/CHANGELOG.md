@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.5.3** — dark default + homepage refinement
 - **0.5.2** — homepage polish pass
 - **0.5.1** — homepage redesign
 - **0.5.0** — UI audit & design-system overhaul
@@ -13,6 +14,50 @@ Version history:
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.5.3] — 2026-08-06
+
+Clarity, hierarchy and dark-mode-first pass over the homepage. No redesign —
+branding, layout, components and content unchanged.
+
+### Added
+- **Dark mode is now the default.** `beforeInteractive` theme-init inline
+  script in `app/layout.tsx` applies the saved `passive-theme` preference
+  before first paint (no FOUC); first-time visitors get dark, returning
+  visitors get their saved choice. `color-scheme` set on `:root`/`.dark` so
+  scrollbars and native form controls match the theme; `themeColor` viewport
+  now `#0b1220`.
+- **Theme toggle icons fixed on desktop** — sun/moon swap rules were trapped
+  inside the `≤980px` media query (both icons showed side-by-side on desktop);
+  moved to base rules next to `.theme-toggle`.
+
+### Changed
+- **Hero decluttered**: removed the "133 Indian Companies · 23 Sectors ·
+  Independently Rated" badge and the "Popular:" search chips; hero heading
+  moved up, stats pulled closer (`margin-top 24px`, divider `20px`) so the
+  block reads badge-less yet balanced; `HeroPreview` untouched.
+- **Latest research → aligned table**: rows now a fixed-column CSS Grid
+  (`44px | 1fr | 92px | 72px | 88px | 88px` — logo, name/ticker + sector/mcap,
+  right-aligned price, right-aligned upside, centered badge, right-aligned
+  date); all rows share identical column tracks for perfect vertical
+  alignment; tabular numerals throughout; `18px` row padding; subtle
+  `--bg-soft` hover.
+- **Mobile latest research → dedicated card layout** (not a shrunk table):
+  grid areas `logo/main/price / main/upside / badge/time`; nothing hidden —
+  ticker, sector and market cap all visible, meta wraps instead of
+  truncating, 44px logo, 16px padding, clean row separators.
+
+### Fixed
+- `.lr-meta` was clipping sector/mcap on mobile; now wraps.
+- `.mobile-menu.open` rule was accidentally dropped while relocating the
+  theme-icon rules — restored.
+- Unused `POPULAR_SEARCHES`/`popularLink` removed from `page.tsx`.
+
+### Removed
+- Hero badge, hero quick-link chips, their CSS (`.hero-badge`,
+  `.hero-quick-links`, `.ql-label`).
 
 ---
 

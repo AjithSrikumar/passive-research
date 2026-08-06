@@ -45,21 +45,22 @@ export default function LatestList() {
             </div>
           )}
           <Link href={`/company/${c.slug}`} className="latest-row-link">
-            <CompanyLogo company={c} size={40} />
+            <span className="lr-logo">
+              <CompanyLogo company={c} size={40} />
+            </span>
             <span className="lr-main">
-              <span className="lr-name">
-                {c.name} <em>· {c.ticker}</em>
+              <span className="lr-title">
+                <span className="lr-name">{c.name}</span>
+                <span className="lr-ticker">{c.ticker}</span>
               </span>
-              <span className="lr-sub">
+              <span className="lr-meta">
                 {c.industry} · {formatCr(c.marketCapCr)}
               </span>
             </span>
-            <span className="lr-metrics">
-              <span className="lr-price">{formatPrice(c.currentPrice)}</span>
-<span className={`lr-upside ${c.upsidePct >= 0 ? "positive" : "negative"}`}>
+            <span className="lr-price">{formatPrice(c.currentPrice)}</span>
+            <span className={`lr-upside ${c.upsidePct >= 0 ? "positive" : "negative"}`}>
               {c.upsidePct >= 0 ? "+" : ""}
               {c.upsidePct.toFixed(1)}%
-            </span>
             </span>
             <RatingBadge rating={c.recommendation} size="sm" />
             <span className="lr-time">{formatUpdated(c.updatedDate)}</span>

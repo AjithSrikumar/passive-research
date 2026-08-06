@@ -1,8 +1,21 @@
 # STYLING.md — Design System
 
-> Single stylesheet: `src/app/globals.css` (~2,100 lines, no preprocessor, no
+> Single stylesheet: `src/app/globals.css` (~2,400 lines, no preprocessor, no
 > CSS-in-JS). All tokens are CSS custom properties; dark mode swaps the token
 > block. This file documents the system; the CSS is the definition of truth.
+
+## 0. Theming (dark-first)
+
+- **Default theme is dark.** `app/layout.tsx` injects a `beforeInteractive`
+  inline script (`#theme-init`) that reads `localStorage['passive-theme']`
+  and toggles the `.dark` class on `<html>` **before first paint** — no flash
+  of the wrong theme. First-time visitors see dark; returning visitors get
+  their saved preference. `ThemeToggle` writes the preference on click.
+- `color-scheme: light` on `:root`, `color-scheme: dark` on `.dark` keeps
+  scrollbars and native form controls native to the active theme.
+- Light values live in `:root`; `.dark` overrides them. `.dark .<selector>`
+  rules are only for hard-coded light-only surfaces (e.g. buttons on accent,
+  logo text).
 
 ## 1. Tokens (`:root` / `.dark`)
 

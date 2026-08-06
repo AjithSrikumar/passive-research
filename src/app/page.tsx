@@ -25,8 +25,6 @@ const FEATURED = [
   "dixon-technologies",
 ];
 
-const POPULAR_SEARCHES = ["HDFC Bank", "TCS", "Titan", "Trent", "ICICI Bank"];
-
 const MARKET_SNAPSHOT = [
   { name: "NIFTY 50", value: "25,610", change: "+0.84%", dir: "positive" },
   { name: "SENSEX", value: "83,724", change: "+0.75%", dir: "positive" },
@@ -34,13 +32,6 @@ const MARKET_SNAPSHOT = [
   { name: "INDIA VIX", value: "12.6", change: "-2.3%", dir: "positive" },
   { name: "USD/INR", value: "86.21", change: "-0.08%", dir: "positive" },
 ];
-
-function popularLink(name: string) {
-  const match = companies.find(
-    (c) => c.name.toLowerCase().includes(name.toLowerCase())
-  );
-  return match ? `/company/${match.slug}` : `/research?q=${encodeURIComponent(name)}`;
-}
 
 export default function HomePage() {
   const featured = companies.filter((c) => FEATURED.includes(c.slug));
@@ -51,13 +42,6 @@ export default function HomePage() {
         <div className="hero-grid-bg" aria-hidden />
         <div className="hero-inner">
           <div>
-            <span className="hero-badge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {companies.length} Indian Companies · {sectors.length} Sectors ·
-              Independently Rated
-            </span>
             <h1>
               Research built to be{" "}
               <span className="accent">decisive.</span>
@@ -70,14 +54,6 @@ export default function HomePage() {
             </p>
             <div className="hero-search">
               <SearchCompanies />
-              <div className="hero-quick-links">
-                <span className="ql-label">Popular:</span>
-                {POPULAR_SEARCHES.map((n) => (
-                  <Link key={n} href={popularLink(n)}>
-                    {n}
-                  </Link>
-                ))}
-              </div>
             </div>
             <div className="hero-stats">
               <div className="hero-stat">

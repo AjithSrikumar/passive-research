@@ -20,7 +20,7 @@ authentication.
 
 ## Current Project Status
 
-- **Version:** 0.5.2 (see `docs/CHANGELOG.md`)
+- **Version:** 0.5.3 (see `docs/CHANGELOG.md`)
 - **Build state:** GREEN — `npm run build` passes, 172 static pages; `npm run
   lint` passes clean.
 - **Deployment:** LIVE — Vercel auto-deploys from the `main` branch
@@ -31,13 +31,13 @@ authentication.
   for all 133 companies. Methodology page rewritten per the manual. Company
   logos (real brand images from `public/logos/`) replace the initials-only
   squares (v0.4.0).
-- **UI state:** v0.5.x upgrade landed — v0.5.0 design tokens/audit
-  (`docs/UI_AUDIT.md` + `docs/STYLING.md`), v0.5.1 homepage redesign, and
-  v0.5.2 polish pass: tightened radius/elevation/type tokens
-  (`--radius-card` 18px, `--radius-btn` 14px, `--radius-input` 16px,
-  `--elevation-low/medium/high`), nav 72→62px scroll-shrink with active
-  underline, hero stats grid (2×2 mobile), premium market-strip ticker,
-  sector/card polish, latest-research 5-col CSS grid.
+- **UI state:** Dark mode is the default (v0.5.3) — `beforeInteractive`
+  theme-init script applies the saved `passive-theme` preference before first
+  paint (no FOUC); hero badge + popular chips removed; latest-research rebuilt
+  as an aligned fixed-column table (desktop) with a dedicated no-clip card
+  layout (mobile). Earlier: v0.5.2 polish (radius/elevation/type tokens,
+  nav scroll-shrink, premium market strip), v0.5.1 homepage redesign, v0.5.0
+  design tokens/audit (`docs/UI_AUDIT.md` + `docs/STYLING.md`).
 - **Docs state:** Full documentation system in `docs/` (ARCHITECTURE,
   DECISIONS, TASKS, CHANGELOG, ROADMAP, DATABASE, API, COMPONENTS, STYLING,
   TESTING, DEPLOYMENT, SECURITY, UI_AUDIT) + `OPENCODE.md` + rewritten
