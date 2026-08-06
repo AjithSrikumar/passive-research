@@ -133,9 +133,16 @@ the API layer and a future enrichment path — never the build source.
 
 ### 7.1 Connection (server-only)
 
-- `DATABASE_URL` lives in `.env.local` (gitignored) and in Vercel env vars
-  for production. Format:
+- `DATABASE_URL` lives in `.env.local` (gitignored, local/dev use) and in
+  Vercel env vars for production.
+- **Local:** direct endpoint —
   `postgresql://postgres:<urlencoded-password>@db.aeondocnbprzdivhzjuv.supabase.co:5432/postgres`
+- **Vercel (deployed):** Supabase blocks the direct endpoint from cloud IPs —
+  use the **session pooler** endpoint, username `postgres.<ref>`:
+  `postgresql://postgres.aeondocnbprzdivhzjuv:<urlencoded-password>@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres`
+  (ref `aeondocnbprzdivhzjuv`, region `ap-northeast-2`). Verified live:
+  `/api/health` returns `{ ok: true, configured: true, reachable: true,
+  counts: { companies: 133, sectors: 23, reportSections: 3325 } }`.
 - **Do not put `sslmode=` in the URL** — pg maps `require`/`verify-ca` to
   `verify-full`, which rejects Supabase's self-signed chain. TLS is set in
   code (`ssl: { rejectUnauthorized: false }`, see `src/lib/db.ts`).
