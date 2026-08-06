@@ -31,12 +31,15 @@
 
 | Token | Value | Use |
 |---|---|---|
-| `--radius-sm/md/lg` | `6px / 8px / 12px` | Controls (buttons, inputs, tables, kv-items) |
-| `--radius-card` | `20px` | Cards |
+| `--radius-sm/md/lg` | `6px / 10px / 14px` | Controls, inner cards, dropdowns |
+| `--radius-btn` | `14px` | Buttons |
+| `--radius-input` | `16px` | Inputs, search bars |
+| `--radius-card` | `18px` | Cards |
 | `--radius-pill` | `1000px` | Badges, filter pills, nav pills |
-| `--shadow-xs/sm/md/lg` | 4-step elevation scale | `sm` = resting cards, `md` = hover, `lg` = overlays |
-| `--shadow-card` | `var(--shadow-sm)` | Resting card surface |
-| `--shadow-hover` | `var(--shadow-md)` | Hover elevation |
+| `--shadow-xs/sm/md/lg` | 4-step elevation scale | `sm` = resting, `md` = hover, `lg` = overlays |
+| `--elevation-low/medium/high` | `sm / md / lg` alias | Semantic elevation tiers (3 only) |
+| `--shadow-card` | `var(--elevation-low)` | Resting card surface |
+| `--shadow-hover` | `var(--elevation-medium)` | Hover elevation |
 | `--space-1..16` | `4/8/12/16/20/24/32/40/48/64px` | 4px spacing scale (padding/gaps) |
 | `--gap-grid` | `24px` (`20px` ≤1024, `16px` ≤640) | Grid gutters |
 | `--container` | `1280px` | Single site-wide content max-width |
@@ -44,7 +47,8 @@
 | `--border-strong` | `#e5e7eb` / `#334155` | Structured dividers (cards) |
 | `--type-xs..5xl` | `12/13.5/15/16/18/22/26/34/44px` | Type scale |
 | `--type-hero` | `clamp(52px, 6.4vw, 64px)` | Hero heading |
-| `--type-section` | `clamp(32px, 4vw, 40px)` | Section titles |
+| `--type-section` | `40px` (`clamp(34,3.5vw,40)` responsive) | Section titles |
+| `--type-card-title` | `20px` | Card titles |
 | `--font-body` | `var(--font-dm-sans)`, DM Sans, Inter, system-ui | Body |
 | `--font-mono` | SFMono-Regular, Menlo, Consolas | Mono/figures |
 
@@ -53,7 +57,7 @@
 - **Family:** DM Sans (`next/font/google`, `--font-dm-sans`), latin subset,
   `display: swap`.
 - **Scale:** hero `--type-hero` (52–64px), section titles `--type-section`
-  (32–40px), card titles 20–22px, body 16px, metadata 13–14px.
+  (40px), card titles `--type-card-title` (20px), body 16px, metadata 13–14px.
 - **Micro-text:** `--text-45` captions, `eyebrow` (letter-spaced uppercase
   label above page heroes), `last-updated`.
 - **Numerics:** `font-variant-numeric: tabular-nums` applied to `.stat-value`,

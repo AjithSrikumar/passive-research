@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.5.2** — homepage polish pass
 - **0.5.1** — homepage redesign
 - **0.5.0** — UI audit & design-system overhaul
 - **0.4.0** — stock logos
@@ -12,6 +13,61 @@ Version history:
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.5.2] — 2026-08-06
+
+Polish pass over the existing homepage (no redesign): tightened spacing,
+elevation, radii, and typography to a stricter token scale; refined nav,
+hero, market strip, sector cards, company cards, and the recent-reports
+list for a cleaner, more deliberate take.
+
+### Added
+- Directive-radius tokens: `--radius-btn` (14px), `--radius-input` (16px),
+  `--radius-card` bumped to 18px, `--radius-lg` → 14px, `--radius-md` → 10px.
+- Semantic elevation aliases `--elevation-low/medium/high` (3 tiers only);
+  `--shadow-card`/`--shadow-hover` now resolve to them.
+- `--type-section` fixed at 40px (+ `--type-section-clamp`) and
+  `--type-card-title` (20px) for consistent headings/card titles.
+
+### Changed
+- **Nav**: 72px height that shrinks to 62px on scroll (with transition);
+  `.active` link gets an animated `::after` underline + accent tint; hover
+  is text-color only; `btn-nav` 40px min-height + elevation; logo mark 40px
+  with glow shadow removed.
+- **Mobile menu**: top follows 72/62px header, `menuIn` animation (typo'd
+  `menu-in` removed), 44px touch targets.
+- **Hero**: reduced padding (`56px` top / `40px` bottom), headline tightened
+  to `14ch` max-width, submax `62ch`; search bar taller with `--radius-input`,
+  focus ring + stronger border; quick-link chips 36px min-height; stats now a
+  start-aligned 4-col grid with 36px numerals and `--space-8` gaps.
+- **Market strip**: premium ticker styling — right-aligned value/change,
+  reduced sizes, dividers between items, hidden UM label on mobile.
+- **SectorCard**: 56px icon chip (28px icon), 20px title
+  (`--type-card-title`), 2-line clamped description, min-height 192px,
+  18px radius via token.
+- **CompanyCard**: 20px title, 2-line thesis clamped, lighter divider, hover
+  no longer recolors border (uses `--border-strong` + elevation); stats 14px,
+  upside 15px/800; badges equal-width via `min-width` (sm 64 / md 76 / lg 92).
+- **Latest research**: rows converted from flex to a 5-column CSS Grid
+  (logo · identity · price/upside · badge · time); row dividers re-done to
+  clean separators; time hidden ≤980px; name/subdownsized on mobile.
+- **CTA band**: 72px padding, `--type-section-clamp` heading, 48px CTA button
+  with `--elevation-high`, tightened paragraph/actions.
+- **Footer**: newsletter input uses `--radius-input` + `--border-strong`,
+  14px link type.
+- Responsive breakpoints tightened: hero 2×2 stats ≤720px; `.section` mobile
+  `64px 18px`; `.section-head` gap 12px; mobile search radius tokenized.
+
+### Fixed
+- `.latest-row` duplicate top border (`.latest-row` + `.is-group-start`
+  conflict) — group start no longer double-divided.
+- Stale `--shadow-md` refs on hero preview card + floating pill → elevation
+  aliases.
+
+### Removed
+- (none)
 
 ---
 
