@@ -1,8 +1,10 @@
 # SECURITY.md
 
-> Threat model for a **fully static, read-only, public website**. Attack
-> surface is small by construction (no backend, no forms that persist, no
-> authentication). This file documents the posture and the near-term plan.
+> Threat model for a **read-only, public website**. Attack surface is small
+> by construction: no authentication, no forms that persist, and the only
+> server-side storage is a Postgres mirror (read-only at runtime) behind the
+> hybrid data store (ADR-013). This file documents the posture and the
+> near-term plan.
 
 ## 1. Asset & Threat Model
 
@@ -29,15 +31,15 @@ handling.
 | Category | Status |
 |---|---|
 | **XSS** | Low risk. The only `dangerouslySetInnerHTML` is the JSON-LD `<script>` on `/company/[slug]`, populated exclusively from the internal `Company` dataset (no user input, no URL params reflected). New `dangerouslySetInnerHTML` is forbidden without review (OPENCODE "Never To Change" #6). |
-| **CSRF** | Not applicable (no state-changing endpoints). |
-| **Injection** | Not applicable (no DB/queries). Content is TS-typed; build fails on invalid data. |
+| **CSRF** | Not applicable (no state-changing endpoints; API is read-only GET). |
+| **Injection** | SQL is parameterized (`pg` positional `$n` placeholders only — `src/lib/db.ts` `queryText`); no string-concatenated SQL. The only interpolations are fixed column names in `db/schema.sql` (no user input). API reads are slug-parameterized lookups returning 404 on miss. |
 | **Open redirects** | Not applicable (no redirect endpoints). |
-| **SSRF / server-side** | Not applicable (no backend requests). |
+| **SSRF / server-side** | Low — the only outbound server connection is the fixed Supabase `DATABASE_URL` from env; no user-controlled URLs. |
 | **IDOR / authz** | Not applicable. |
-| **Input validation** | Search/browser filters are client-side arrays; no server input. Slugs are validated by `getCompany`/`getSector` lookups (404 on miss). |
-| **Rate limiting** | Not applicable (static). Add at the CDN/edge only if a public API ships (ROADMAP). |
+| **Input validation** | Search/browser filters are client-side arrays; no server input. Slugs are validated by `getCompany`/`getSector` lookups (404 on miss); API slugs via the same store. |
+| **Rate limiting** | Not applicable (static pages). The read-only JSON API (`/api/*`) has no rate limit today — add at the CDN/edge if it ships publicly (ROADMAP). |
 | **Clickjacking** | Default headers on host should include `X-Frame-Options`/`frame-ancestors`; enforce via CSP (M1). |
-| **Supply chain** | Version-pinned lockfile; audit gate planned (M2). |
+| **Supply chain** | Version-pinned lockfile; audit gate planned (M2). Runtime deps now include `pg` + `server-only` (ADR-013). |
 
 ## 4. Security Headers
 
@@ -73,22 +75,26 @@ handling.
 
 ## 6. Dependency Policy
 
-- Runtime deps are locked to `next`, `react`, `react-dom`
-  (ADR-001). New runtime deps require an ADR.
+- Runtime deps: `next`, `react`, `react-dom`, plus `pg` and `server-only`
+  since v0.6.0 (ADR-013). New runtime deps require an ADR.
 - `package-lock.json` is committed.
 - CI gate planned: `npm audit --audit-level=high` on every build (M2).
 
 ## 7. Secrets
 
-No secrets in the repo. If `.env*` is ever introduced, it stays in
-`.gitignore` (already ignores `.env*`), and values live in the host's secret
-manager.
+- `.env.local` (gitignored via `.env*`) holds `DATABASE_URL` for local
+  connects and seeds. Never commit it.
+- Production: set `DATABASE_URL` in the Vercel project env (dashboard);
+  never check it into `next.config.ts` or source.
+- Supabase is the only secret holder; the password URL-encoded in
+  `DATABASE_URL` grants read/write on this DB — limit access to the project.
 
 ## 8. Security Checklist (before each release)
 
 - [ ] No `dangerouslySetInnerHTML` beyond the JSON-LD script
-- [ ] No user-input sent to HTML without escaping (none exist)
-- [ ] No secrets/absolute paths committed
+- [ ] No user-input sent to HTML without escaping (none exist); SQL is
+      parameterized only (`queryText`)
+- [ ] No secrets/absolute paths committed; `.env*` ignored, Vercel env set
 - [ ] `npm audit` clean (once gate live; otherwise spot-check)
 - [ ] Host headers reviewed once M1 lands (CSP/frame-ancestors present)
 - [ ] `robots.txt` scoped correctly

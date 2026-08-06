@@ -1,9 +1,10 @@
 # API.md — Public Surface & Route Table
 
-> **There is no backend API.** The externally visible surface is the set of
-> pre-rendered routes, `sitemap.xml`, `robots.txt`, and JSON-LD structured
-> data. This file is the contract for that surface and the plan for a future
-> API.
+> The site is pre-rendered; **the content surface is HTML routes,**
+> `sitemap.xml`, `robots.txt`, and JSON-LD structured data. Since v0.6.0 a
+> small **read-only JSON API** (`/api/*`, see § 7) serves the same dataset
+> from the Postgres mirror with a static fallback (`src/lib/store.ts`).
+> This file is the contract for that surface.
 
 ## 1. Routes
 
@@ -79,10 +80,35 @@ No API error codes exist. Behavioral errors:
 | Unknown `/sectors/<slug>` | 404 via `getSector()` guard |
 | Any other unknown path | 404 (`_not-found`) |
 
-## 6. Future public API (proposal, not built)
+## 6. Future public API (proposal)
 
-Task M6/ROADMAP: a read-only JSON API for the coverage universe, e.g.
-`GET /api/companies`, `GET /api/companies/:slug` returning the `Company`
-shape in `docs/DATABASE.md`, plus `GET /api/reports/:slug` returning report
-sections. Would sit on the same `src/lib` layer (no page changes). ADR
-required before implementation.
+Enrichment/superset ideas beyond the current surface: `/api/reports/:slug`
+returning rendered sections, sector-filtered lists, consensus comparison,
+and watchlist/auth-gated endpoints (each requires an ADR before
+implementation).
+
+## 7. JSON API (live, v0.6.0+)
+
+Read-only, `GET`, JSON responses. **Hybrid-backed** (`src/lib/store.ts`):
+serves from Postgres when reachable, falls back to the bundled static
+dataset otherwise — the endpoint shape never changes. No auth, no write
+verbs, no query params today.
+
+| Route | Response |
+|---|---|
+| `GET /api/health` | `{ ok, service: "db", configured, reachable, counts: { companies, sectors, reportSections }, timestamp }` — `ok` false when unconfigured/unreachable |
+| `GET /api/companies` | `{ companies: Company[], sectors: Sector[], count, generatedAt }` |
+| `GET /api/companies/[slug]` | `{ company: Company, sections: {section_key,label,content}[] \| null, generatedAt }`; `404 { error, slug }` on unknown slug |
+
+Notes:
+
+- `Company`/`Sector` are the typed shapes from `src/lib/companies.ts` /
+  `src/lib/sectors.ts` (`Company` rows are mapped from snake_case DB
+  columns, `pe: null` preserved).
+- `sections` is `null` when the DB is unreachable (section payloads only
+  live in the DB mirror).
+- Route handlers live in `src/app/api/*/route.ts`, marked dynamic (they are
+  never statically prerendered; data is queried per request with the pool
+  memoization in `store.ts`).
+- Error model: 404 only for unknown slugs; DB failure is never a 5xx —
+  it degrades to the static dataset (health endpoint reports it).

@@ -13,18 +13,25 @@
       DEPLOYMENT/SECURITY.
 - [x] Live deployment (v0.3.1) — repo on GitHub, Vercel auto-deploy on push
       to `main` (`https://passive-research.vercel.app`), auto-commit policy.
+- [x] **Database connection + article storage (v0.6.0)** — Supabase Postgres
+      mirror (23 sectors, 133 companies, 3,325 report sections), seeded via
+      `npm run db:seed`, hybrid store (`src/lib/store.ts`), read-only JSON
+      API (`/api/health`, `/api/companies`, `/api/companies/[slug]`).
 - [ ] Editorial review pass of report language (M3).
 - [ ] First chart increment: financial history trend + margin bridge (H2
       partial).
 
 ## Next Sprint — Sprint 4
 
-- **Data enrichment design** (H1): define the typed-`Company` contract for
-  sourced data; placeholder `data/` directory; keep evidence labels honest.
+- **Data enrichment design** (H1): enrich `Company` fields from sourced
+  data, then re-seed the mirror (`npm run db:seed`); keep evidence labels
+  honest.
 - **Test runner adoption** (H3): Vitest for `src/lib` + move the smoke
   checklist into a script.
 - **Sector page symmetry** (M4): `dynamicParams = false`.
 - **CSP/headers** (M1) + `npm audit` gate (M2).
+- **API hardening** (M6 follow-up): rate limiting at the edge if `/api/*`
+  traffic grows; consider `GET /api/sectors` and `/api/reports/:slug`.
 
 ## Next Month
 
@@ -41,7 +48,8 @@
   same 25-section framework.
 - **Consensus + owned estimates UI:** compare our `pricedInAnalysis` with
   in.marketscreener consensus interactively.
-- **Data API + private dashboards:** auth-gated coverage, saved watchlists,
+- **Data API + private dashboards:** expand `/api/*` (sector lists, report
+  sections, consensus), then auth-gated coverage, saved watchlists,
   alerting on signposts/catalysts from Section 21–22 registers.
 - **Static export + CDN** for the public site; optional accounts layer
   separate from the public read-only product.

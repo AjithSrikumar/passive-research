@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.6.0** — Postgres mirror + read-only JSON API
 - **0.5.3** — dark default + homepage refinement
 - **0.5.2** — homepage polish pass
 - **0.5.1** — homepage redesign
@@ -14,6 +15,58 @@ Version history:
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.6.0] — 2026-08-07
+
+Connected a Supabase Postgres database to the project and stored the full
+equity-research dataset (133 companies, 23 sectors, 3,325 report sections)
+in it, behind a hybrid store that falls back to the static modules when the
+DB is unavailable. Pages remain SSG and DB-independent (ADR-011).
+
+### Added
+- **Postgres mirror** (`ADR-011`): Supabase instance at
+  `db.aeondocnbprzdivhzjuv.supabase.co`; idempotent schema `db/schema.sql`
+  (`sectors`, `companies` with 22 snake_case fields + `author` + rating
+  `CHECK` + real FK to sectors, `report_sections` with JSONB content);
+  seeder `scripts/db/seed.ts` (`npm run db:seed`, run via `tsx`) —
+  truncates and batch-inserts all tables. Verified live:
+  `{ sectors: 23, companies: 133, report_sections: 3325 }`.
+- **`src/lib/db.ts`** — server-only (`import "server-only"`) lazy `pg.Pool`
+  singleton (`max: 4`, `connectionTimeoutMillis: 5000`, TLS with
+  `rejectUnauthorized: false`); `isDbConfigured()`, `pingDb()`,
+  `queryText<T>()`, `withClient<T>()`. URL must not carry `sslmode` (pg
+  aliases `require` → `verify-full`, which rejects Supabase's cert chain).
+- **`src/lib/store.ts`** — hybrid loaders (`getAllCompanies`,
+  `getAllSectors`, `getCompanyBySlug`, `getReportSections`, `getDbStatus`):
+  try DB first, fall back to the bundled static arrays; memoized per process.
+- **Read-only JSON API** (dynamic route handlers):
+  - `GET /api/health` — DB status + row counts.
+  - `GET /api/companies` — full `Company[]` + `Sector[]`.
+  - `GET /api/companies/[slug]` — one company + its 25 report sections;
+    404 JSON on unknown slug.
+- Runtime deps `pg` + `server-only`; dev deps `@types/pg`, `tsx`.
+
+### Changed
+- Docs rewritten for the two-layer data story: `docs/DATABASE.md` (mirror
+  schema, seed, hybrid store), `docs/API.md` (§7 live JSON API),
+  `docs/SECURITY.md` (parameterized SQL, secrets, dependency policy),
+  `README.md` (stack/env/scripts/folders), `OPENCODE.md`, ADR-011 appended
+  to `docs/DECISIONS.md`.
+
+### Fixed
+- `sslmode`-in-URL connection failure ("self-signed certificate in
+  certificate chain") — TLS config moved to code; verified live
+  `OK ... postgres`.
+
+### Removed
+- n/a.
+
+### Security
+- SQL is parameterized only; `DATABASE_URL` lives in gitignored `.env.local`
+  + Vercel env (never in source); the API is read-only GET; DB failure
+  degrades to static data, never an error page.
 
 ---
 

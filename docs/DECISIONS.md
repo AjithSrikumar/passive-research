@@ -244,6 +244,42 @@
 
 ---
 
+## ADR-011 — Postgres mirror + hybrid data store (v0.6.0)
+
+- **Date:** 2026-08-07
+- **Context:** The site is static by design (ADR-002/008); analysts asked
+  whether the project could "connect a database." The static TS modules
+  remain the build-time source of truth for all 172 pages.
+- **Problem:** (a) No DB-backed story for programmatic/API consumers; (b)
+  the dataset lives only in code, so no external tooling can query it.
+- **Options:** (a) DB as a full replacement for `companies.ts`/`sectors.ts`
+  (pages build from DB — couples deploys to a remote DB and breaks the
+  "static by default" rule); (b) DB as a mirror + read-only API on top,
+  with hybrid loaders (DB-first, static fallback); (c) no DB.
+- **Decision:** (b). Supabase Postgres mirrors `sectors` (23), `companies`
+  (133, snake_case, + `author` column), and `report_sections` (133 × 25
+  derived JSONB payloads). Schema lives in `db/schema.sql` (idempotent);
+  `npm run db:seed` (tsx) truncates and batch-inserts from the TS source of
+  truth. `src/lib/db.ts` (server-only `pg`) + `src/lib/store.ts` (hybrid
+  loaders) feed three read-only API routes (`/api/health`,
+  `/api/companies`, `/api/companies/[slug]`).
+- **Reasoning:** Pages keep generating from TS (build is DB-independent —
+  if `DATABASE_URL` is absent or down, everything renders and the API serves
+  static data). The DB adds a queryable, contract-typed store and an API
+  surface with zero regression risk to the static product.
+- **Tradeoffs:** Two sources of content (sync by re-seed); `pg`,
+  `server-only`, `tsx`, `@types/pg` are new dev/runtime deps (ADR-001
+  dependency rule waived by this ADR); section payloads are served only from
+  the DB mirror (fall to `null` when unreachable).
+- **Consequences:** SECURITY/DATABASE/API docs updated; `.env.local` +
+  Vercel env `DATABASE_URL`; future enrichment flows through a DDL change,
+  seed, and rebuild. Data freshness for live prices is out of scope (ADR-007).
+- **Future review:** If the DB becomes the primary store (CMS, live prices),
+  replace the hybrid fallback with a sole-DB loader behind the same
+  interfaces and revisit `dynamicParams` (ADR-008).
+
+---
+
 ## Backlog — decision candidates (not yet ADRs)
 
 - **Proposed ADR:** Adopt Vitest for `src/lib` unit tests (task H3).
@@ -255,4 +291,4 @@
 
 *Index of ADRs: 001 platform · 002 data layer · 003 styling · 004 dark mode ·
 005 report framework · 006 methodology · 007 synthetic financials ·
-008 SSG/SEO · 009 docs governance · 010 logo assets.*
+008 SSG/SEO · 009 docs governance · 010 logo assets · 011 Postgres mirror.*

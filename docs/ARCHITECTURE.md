@@ -1,15 +1,18 @@
 # ARCHITECTURE.md
 
-> **Status:** Current, mirrors the code as of 2026-08-06 (v0.3.0).
+> **Status:** Current, mirrors the code as of 2026-08-07 (v0.6.0).
 > This is the most important document in the repository. Update it the moment
 > architecture changes.
 
 ## 1. Overview
 
-**Passive** is a fully static, server-rendered equity research website. There
-is no backend, no database, no API server, and no authentication. All content
-is derived at build time from TypeScript data modules; the site is deployed as
-pre-rendered HTML.
+**Passive** is a static-first, server-rendered equity research website. All
+**pages** are derived at build time from TypeScript data modules and deployed
+as pre-rendered HTML. Since v0.6.0 (ADR-011) there is also an **optional
+Supabase Postgres mirror** of the same content, served through a hybrid
+server-only store (`src/lib/store.ts`) and three read-only JSON API routes.
+No auth, no persistence of user data, no write endpoints. Pages never depend
+on the DB (a missing/unreachable `DATABASE_URL` changes nothing rendered).
 
 ```mermaid
 flowchart LR
@@ -17,18 +20,22 @@ flowchart LR
   B[src/lib/sectors.ts<br/>23 sectors] --> C
   C --> D[SSG pages<br/>src/app/**]
   D --> E[Static HTML + JSON-LD<br/>172 pages]
+  A2[db/schema.sql<br/>Postgres mirror] --> F[src/lib/db.ts<br/>pg pool]
+  F --> G[src/lib/store.ts<br/>hybrid loaders]
+  G --> H[/api/health /api/companies<br/>/api/companies/[slug]/]
+  G -.fallback.-> A
 ```
 
 ### Architecture layers
 
 | Layer | Implementation |
 |---|---|
-| Frontend | React 19 server components; App Router; 5 client components |
-| Backend | None (static generation at build time) |
-| APIs | None (public surface = pages, `sitemap.xml`, `robots.txt`) |
-| Database | None — static TS modules act as the data layer (`docs/DATABASE.md`) |
-| Authentication / Authorization | Not applicable (public read-only site) |
-| Storage | No runtime storage; theme preference in `localStorage` |
+| Frontend | React 19 server components; App Router; 6 client components |
+| Backend | None on the page path (SSG at build time) |
+| APIs | Read-only JSON: `/api/health`, `/api/companies`, `/api/companies/[slug]` (v0.6.0, ADR-011) |
+| Database | Optional Supabase Postgres mirror (`db/schema.sql`, `npm run db:seed`); pages stay on static TS modules (`docs/DATABASE.md`) |
+| Authentication / Authorization | Not applicable (public read-only site; API is GET-only) |
+| Storage | No user storage; theme preference in `localStorage`; DB mirror holds the dataset snapshot |
 | Deployment | Next.js on any Node host; Vercel recommended (`docs/DEPLOYMENT.md`) |
 
 ## 2. Design Philosophy
@@ -133,13 +140,21 @@ option (`docs/ROADMAP.md`).
 
 ## 7. API Architecture
 
-There is no backend API. The externally visible surface is:
+The content surface is pre-rendered HTML (+ sitemap/robots/JSON-LD), and
+since v0.6.0 there is also a small read-only JSON API backed by the Postgres
+mirror:
 
 - **HTML pages** — see `docs/API.md` for the full route table.
 - **`/sitemap.xml`** — all 172+ URLs with lastmod from data.
 - **`/robots.txt`** — allow all, sitemap pointer.
 - **JSON-LD** — `ResearchArticle` schema on every `/company/[slug]` page,
   injected via `dangerouslySetInnerHTML` with data built from the internal
+  dataset.
+- **`/api/*` (read-only JSON)** — `src/app/api/{health,companies,
+  companies/[slug]}/route.ts`, dynamic handlers that hit the Postgres mirror
+  through the hybrid store (`src/lib/store.ts` → `src/lib/db.ts`) and fall
+  back to the bundled static modules when the DB is down. Pages are never
+  wired to these routes (ADR-011).
   dataset only (no user input — safe by construction; `docs/SECURITY.md`).
 
 ## 8. Component Architecture

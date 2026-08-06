@@ -8,24 +8,31 @@
 
 ---
 
-## Project Summary
-
 **Passive** — an institutional-grade equity research platform for Indian listed
-stocks. A fully static Next.js 16 App Router site: 133 company report pages,
-23 sector pages, and standard content pages, all generated at build time from
-TypeScript data modules. Reports follow a fixed 25-section institutional
-framework with evidence labels, driver-based forecasting, reverse-DCF
-valuation, scenarios, and monitorable risks. No database, no backend, no
-authentication.
+stocks. A Next.js 16 App Router site: 133 company report pages, 23 sector
+pages, and standard content pages. Pages are generated **at build time**
+(SSG) from TypeScript data modules (`src/lib`). Reports follow a fixed
+25-section institutional framework with evidence labels, driver-based
+forecasting, reverse-DCF valuation, scenarios, and monitorable risks. Since
+v0.6.0 a **Supabase Postgres mirror** + read-only JSON API (`/api/*`) serve
+the same dataset through hybrid loaders (DB-first, static fallback —
+ADR-011); the build and all pages remain fully static and DB-independent.
 
 ## Current Project Status
 
-- **Version:** 0.5.3 (see `docs/CHANGELOG.md`)
-- **Build state:** GREEN — `npm run build` passes, 172 static pages; `npm run
-  lint` passes clean.
+- **Version:** 0.6.0 (see `docs/CHANGELOG.md`)
+- **Build state:** GREEN — `npm run build` passes, 172 static pages + 3
+  dynamic API routes; `npm run lint` passes clean. Build works with **no**
+  `DATABASE_URL` (pages never read the DB).
 - **Deployment:** LIVE — Vercel auto-deploys from the `main` branch
   (`https://passive-research.vercel.app`); domain `passive-research.in` is the
   canonical origin (see `docs/DEPLOYMENT.md`).
+- **Database:** Supabase Postgres connected (ADR-011) — schema
+  `db/schema.sql`, seeded via `npm run db:seed`
+  (`{ sectors: 23, companies: 133, report_sections: 3325 }`), accessed
+  server-only through `src/lib/db.ts` + `src/lib/store.ts`. `.env.local`
+  holds `DATABASE_URL` (gitignored); Vercel env must be set in the dashboard
+  for production API reads to hit the DB.
 - **Content state:** The institutional upgrade (executive summary, thesis map,
   reverse-DCF, scenarios, risk/catalyst registers, evidence labels) is complete
   for all 133 companies. Methodology page rewritten per the manual. Company
@@ -113,8 +120,10 @@ public/            Static assets
 - **TypeScript 5** + **ESLint 9** (`eslint-config-next`).
 - **CSS custom properties** — styling; no Tailwind/SCSS/styled-components.
 - **DM Sans** via `next/font/google`.
-- **Do not add runtime dependencies** without an ADR (see `docs/DECISIONS.md`
-  ADR-001). If you need a feature, build it with CSS/TS first.
+- **`pg` + `server-only`** — Postgres client + boundary guard for the DB
+  mirror (runtime, ADR-011). `tsx`/`@types/pg` as dev deps.
+- **Do not add further runtime dependencies** without an ADR (see
+  `docs/DECISIONS.md`). If you need a feature, build it with CSS/TS first.
 
 ## Design System
 
@@ -146,6 +155,11 @@ public/            Static assets
   must all derive from it — never hardcode the 25 sections twice.
 - Data must flow: `companies.ts` / `sectors.ts` → `report.ts` → pages. No
   component may recompute these with divergent constants.
+- **Pages never read the DB.** The Postgres mirror (ADR-011) is served only
+  through `src/lib/db.ts` + `src/lib/store.ts` and the `/api/*` routes;
+  server components that need universe data import the static modules
+  directly. A missing/`unreachable` `DATABASE_URL` must not change any
+  rendered output.
 - RSC output + tiny client islands; no global state library.
 - `report-section` class + `data-report-section` attribute are required by the
   `ReportToc` scrollspy. Section elements and `id`s must match `reportToc`.
@@ -166,8 +180,8 @@ public/            Static assets
    robots.
 6. **`dangerouslySetInnerHTML` usage** — allowed for the JSON-LD script only
    (data from internal dataset). Never for user-derived markup.
-7. **Keeping runtime dependencies at next/react/react-dom** — a new runtime
-   dep requires an ADR.
+7. **Keeping runtime dependencies at next/react/react-dom/pg/server-only**
+   — a new runtime dep requires an ADR (pg + server-only added by ADR-011).
 8. The auto-generated `AGENTS.md` guard block (Next.js agent rules) — it must
    not be edited or removed; `next dev` re-adds it. See "Things never to
    change/AGENTS.
@@ -185,6 +199,11 @@ point. Not a bug; by design.
 - Brand phrasing/English copy may need a final editorial pass (Sprint 1
   hardening).
 - No charts yet (planned); no CSP (planned).
+- DB mirror must be re-seeded (`npm run db:seed`) after any data change in
+  `companies.ts`/`sectors.ts` — the TS modules remain the source of truth;
+  the mirror is a snapshot.
+- Vercel production needs `DATABASE_URL` set in the project env for the API
+  to read the DB (falls back to static data without it).
 
 ## Recently Completed Features
 
@@ -212,8 +231,9 @@ See `docs/TASKS.md` for the full queue.
 
 ## Current Priorities
 
-1. Get Sprint 1 closed (review pass, fixes).
-2. Data enrichment pipeline design (real companies data → typed JSON).
+1. Keep the repo the single source of truth — docs synchronized with the
+   new hybrid DB layer.
+2. Data enrichment pipeline (real companies data → typed JSON → re-seed).
 3. Chart library (manual-driven) for history + bridges.
 4. Security headers + CSP + `npm audit` gate.
 

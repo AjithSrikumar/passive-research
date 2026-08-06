@@ -44,9 +44,17 @@ app routes: content pages, sitemap, robots, 404).
 
 ## 4. Secrets
 
-**No secrets exist.** The app has no env vars, no tokens, no API keys. If the
-data pipeline (H1) adds one, store it in the host's secret manager and
-reference it from `next.config.ts` `env` only.
+Only one secret exists: **`DATABASE_URL`** (Supabase Postgres, v0.6.0,
+ADR-011). It is optional — the static site and the `/api/*` fallback work
+without it.
+
+- **Local:** put it in `.env.local` (gitignored via `.env*`); never commit it.
+- **Production:** add it to the **Vercel project settings → Environment
+  Variables** (Production) as `DATABASE_URL`. The URL-encoded password is in
+  it, so treat it like a credential. With it set, `/api/*` read the mirror;
+  without it they serve the bundled static dataset.
+- If the data pipeline (H1) adds other secrets, store them in the host's
+  secret manager and reference from `next.config.ts` `env` only.
 
 ## 5. Rollback Process
 
@@ -58,12 +66,13 @@ reference it from `next.config.ts` `env` only.
 ## 6. Deployment Checklist
 
 - [ ] `npm run lint` clean
-- [ ] `npm run build` clean, 172 pages
+- [ ] `npm run build` clean, 172 pages (+ 3 dynamic API routes)
 - [ ] Smoke test pass (`docs/TESTING.md` § 3)
 - [ ] `sitemap.xml` includes new companies/sectors if the universe changed
 - [ ] `metadataBase` matches the production origin
 - [ ] `docs/CHANGELOG.md` version bumped and tagged
-- [ ] No absolute local paths / machine-specific config committed
+- [ ] No absolute local paths / machine-specific config committed; `.env*` ignored
+- [ ] If the dataset changed: `npm run db:seed` re-run so the mirror matches
 - [ ] `robots.txt` allows crawling of intended pages only
 
 ## 7. Future Options

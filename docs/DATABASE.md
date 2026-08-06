@@ -1,10 +1,16 @@
-# DATABASE.md — The Static Data Layer
+# DATABASE.md — The Data Layer (Static TS + Postgres Mirror)
 
-> **There is no database.** The "database" is the TypeScript data layer in
-> `src/lib/` (see `docs/DECISIONS.md` ADR-002). It is type-checked at build
-> time, has no migrations, and is the single source of truth for all content.
-> This document defines its schema, relationships, constraints, and the
-> future upgrade path.
+> **Two data layers. The build-time source of truth is the TypeScript data
+> layer in `src/lib/`** (ADR-012): type-checked at build, no migrations, and
+> what every page is generated from (all routes stay SSG). A **Supabase
+> Postgres mirror** (ADR-013) stores the same content in `sectors`,
+> `companies`, and `report_sections` tables, seeded by `npm run db:seed`.
+> Server code reads it through a **hybrid store** (`src/lib/store.ts`) that
+> tries the DB first and falls back to the bundled static modules when the DB
+> is unreachable or unconfigured.
+>
+> Rule: pages never depend on the DB. If `DATABASE_URL` is absent, builds
+> and rendering behave exactly as before the DB existed.
 
 ## 1. Entities
 
@@ -119,14 +125,75 @@ Sector (1) ──< Company (N)
   icon
 ```
 
-## 7. Future: moving to a real database
+## 7. Postgres mirror (Supabase, connected)
 
-Upgrade path (task H1, `docs/ROADMAP.md`):
+Supabase Postgres at `db.aeondocnbprzdivhzjuv.supabase.co:5432` (db `postgres`,
+user `postgres`) holds an instance of the same content. It is a **mirror** for
+the API layer and a future enrichment path — never the build source.
 
-1. Export the same `Company`/`Sector` shapes to typed JSON.
-2. Replace the row map with a typed loader (file or API) behind the same
-   helper signatures — **page components unchanged**.
-3. Keep all constraints identical; add a schema-validation step (e.g., Zod)
-   if ingestion becomes external.
-4. If live prices are needed: split `Company` into static coverage + a
-   price/estimate table refreshed independently (ISR/on-demand rendering).
+### 7.1 Connection (server-only)
+
+- `DATABASE_URL` lives in `.env.local` (gitignored) and in Vercel env vars
+  for production. Format:
+  `postgresql://postgres:<urlencoded-password>@db.aeondocnbprzdivhzjuv.supabase.co:5432/postgres`
+- **Do not put `sslmode=` in the URL** — pg maps `require`/`verify-ca` to
+  `verify-full`, which rejects Supabase's self-signed chain. TLS is set in
+  code (`ssl: { rejectUnauthorized: false }`, see `src/lib/db.ts`).
+- `src/lib/db.ts` is `import "server-only"`: lazy `pg.Pool` singleton
+  (`max: 4`, `connectionTimeoutMillis: 5000`), `isDbConfigured()`,
+  `pingDb()`, `queryText<T>()`, `withClient<T>()`. All callers must guard
+  `isDbConfigured()` — pool creation never throws, queries throw and are
+  caught by `src/lib/store.ts`.
+
+### 7.2 Schema (`db/schema.sql`, idempotent)
+
+| Table | PK | Notes |
+|---|---|---|
+| `sectors` | `slug` | `slug, name, description, icon` |
+| `companies` | `slug` | All 22 `Company` fields **snake_case** + `author`; real FK `sector → sectors(slug)`; `CHECK` rating enum; index on `(sector, updated_date DESC)`; `pe` nullable |
+| `report_sections` | `(company_slug, section_key)` | `company_slug` FK → `companies.slug` ON DELETE CASCADE; `sort_order`, `label`, `content JSONB` (the derived section payload) |
+
+`report_sections` rows carry the full derived section payload per company
+(one JSONB blob per section key, mirrored from `report.ts` render math).
+
+### 7.3 Seeding
+
+- `npm run db:seed` → `scripts/db/seed.ts` (run via `tsx`):
+  - Applies `db/schema.sql` (`CREATE TABLE IF NOT EXISTS`), then
+    `TRUNCATE ... CASCADE` and batch-inserts: 23 sectors, 133 companies,
+    3,325 report sections (133 × 25 `reportToc` sections).
+  - Section content is the derived payload for each company (mirrors
+    `ReportContent` derivations) stored as JSONB.
+  - Idempotent: re-runnable, wipes and reloads.
+- Verified against the live DB: `Seed complete: { sectors: '23',
+  companies: '133', report_sections: '3325' }`.
+
+### 7.4 Hybrid store (`src/lib/store.ts`, server-only)
+
+| Loader | DB query (try) | Fallback |
+|---|---|---|
+| `getAllCompanies()` | `SELECT * FROM companies ORDER BY name` | `companies` static array |
+| `getAllSectors()` | `SELECT ... FROM sectors ORDER BY name` | `sectors` static array |
+| `getCompanyBySlug(slug)` | via `getAllCompanies()` | same |
+| `getReportSections(slug)` | `SELECT ... FROM report_sections WHERE company_slug=$1` | `null` |
+| `getDbStatus()` | counts over 3 tables | zeros + `reachable:false` |
+
+Memoized per process; catches query failures and falls back to the bundled
+arrays — so an unreachable DB degrades to the pre-DB behavior.
+
+### 7.5 API read surface (hybrid-backed, always available)
+
+| Route | Behavior |
+|---|---|
+| `GET /api/health` | `{ ok, configured, reachable, counts: { companies, sectors, reportSections }, timestamp }` |
+| `GET /api/companies` | `{ companies: Company[], sectors: Sector[], count, generatedAt }` |
+| `GET /api/companies/[slug]` | `{ company, sections: SectionRow[] \| null }`; 404 JSON on unknown slug |
+
+Routes are dynamic (`ƒ`), DB-first with static fallback — a DB outage returns
+the bundled dataset rather than errors. Full contract in `docs/API.md`.
+
+## 8. Future: enrichment
+
+Since every page still generates from `src/lib`, enriching data remains a
+`companies.ts`/`sectors.ts` change, then re-seed. Live prices (per §4 of the
+old plan) stay a page-generation concern, not a DB one.
