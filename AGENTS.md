@@ -12,3 +12,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 > (project status, standards, constraints), then `docs/ARCHITECTURE.md`,
 > `docs/DECISIONS.md`, and `docs/TASKS.md`. The repository — not chat history —
 > is the source of truth.
+>
+> **Commit & deploy rule (mandatory):** after every change, run
+> `npm run lint` + `npm run build`, update the relevant docs, then
+> **commit and push to `main`** — Vercel auto-deploys on every push
+> (see OPENCODE.md → "Commit & Deploy Policy"). Never leave the tree dirty.

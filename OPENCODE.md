@@ -20,9 +20,12 @@ authentication.
 
 ## Current Project Status
 
-- **Version:** 0.3.0 (see `docs/CHANGELOG.md`)
+- **Version:** 0.3.1 (see `docs/CHANGELOG.md`)
 - **Build state:** GREEN — `npm run build` passes, 172 static pages; `npm run
   lint` passes clean.
+- **Deployment:** LIVE — Vercel auto-deploys from the `main` branch
+  (`https://passive-research.vercel.app`); domain `passive-research.in` is the
+  canonical origin (see `docs/DEPLOYMENT.md`).
 - **Content state:** The institutional upgrade (executive summary, thesis map,
   reverse-DCF, scenarios, risk/catalyst registers, evidence labels) is complete
   for all 117 companies. Methodology page rewritten per the manual.
@@ -215,7 +218,28 @@ See `docs/TASKS.md` for the full queue.
 6. Update docs (ARCHITECTURE/COMPONENTS/CSS/DATABASE/API as applicable),
    `docs/TASKS.md` (move to Completed), `docs/CHANGELOG.md`, and `docs/DECISIONS.md`
    if design decisions changed.
-7. Report the summary, don't commit unless asked.
+7. **Commit & push** (see the Commit & Deploy Policy below). Do **not** wait to
+   be asked — the repo and the live site must always reflect the latest state.
+
+## Commit & Deploy Policy (mandatory)
+
+- **Auto-commit:** after every change (code, data, or docs), commit with a
+  clear, concise message and push to `main`. The working tree must be clean at
+  the end of every session. Do not leave uncommitted work behind — the
+  repository is the source of truth.
+- **Auto-deploy:** Vercel is connected to the GitHub repo; every push to
+  `main` triggers a production deployment automatically
+  (`https://passive-research.vercel.app`). No manual deploy steps exist.
+- **Branching:** work directly on `main` (solo project). If a change is risky
+  or large, use a `feature/` branch and merge via PR — but never leave
+  branches unmerged for long.
+- **Commit hygiene:** stage only intended files; never commit secrets,
+  `node_modules`, `.next`, or `.env*` (`.gitignore` covers these). One logical
+  change per commit; message style: imperative, summary line + optional body.
+- **Verify before commit:** `npm run lint` + `npm run build` green, smoke
+  checks passed, docs updated — then commit.
+- If a commit is amended or the push fails, fix forward (new commit), never
+  rewrite published history.
 
 ## Documentation Rules
 
@@ -247,12 +271,22 @@ Before you consider any task finished:
 - [ ] `docs/DECISIONS.md` updated for any new decisions; older ADRs preserved.
 - [ ] `docs/ARCHITECTURE.md` (and COMPONENTS/STYLING/API/DATABASE as needed)
       reflect reality.
-- [ ] `OPENCODE.md` worked around as needed for status/deps/schema changes.
-- [ ] If the user asked to commit, leave the tree clean.
+- [ ] `OPENCODE.md` updated as needed for status/deps/schema changes.
+- [ ] **Committed + pushed to `main`** (Commit & Deploy Policy) — tree clean,
+      Vercel auto-deploys the result.
+
+## Shutdown — deployment confirmation
+
+1. `git status` must show a clean working tree (`git status -sb` no unstaged
+   files) and no unpushed commits (`git log origin/main..main` empty).
+2. If new commits were pushed, confirm the Vercel deployment is healthy:
+   `Invoke-WebRequest https://passive-research.vercel.app` → 200, then spot
+   check the changed routes. Vercel builds take ~1–2 minutes; a 200 on the
+   domain once the deployment completes is the pass signal.
 
 Definition of done: code + docs verified + task & changelog reflecting the
 change. If any of the above is missed, the task is **not fixed**.
 
 ---
 
-*Last updated: 2026-08-06 (v0.3.0)*
+*Last updated: 2026-08-06 (v0.3.1 — auto-commit & auto-deploy policy)*

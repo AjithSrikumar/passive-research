@@ -40,6 +40,7 @@
 
 | Date | Task | Notes |
 |---|---|---|
+| 2026-08-06 | **Deployment wiring** (v0.3.1) | Repo pushed to `AjithSrikumar/passive-research`; Vercel connected — auto-deploy on every push to `main` (`https://passive-research.vercel.app`); auto-commit policy added to OPENCODE/AGENTS/DEPLOYMENT docs. |
 | 2026-08-06 | **Doc-engineering sprint** (v0.3.0) | `README`, `docs/ARCHITECTURE`, `docs/OPENCODE.md`, `docs/TASKS.md`, `docs/CHANGELOG.md`, `docs/DECISIONS.md`, `docs/ROADMAP.md`, `docs/DATABASE.md`, `docs/API.md`, `docs/COMPONENTS.md`, `docs/STYLING.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`, `docs/SECURITY.md`; AGENTS.md pointer. |
 | 2026-08-06 | **Institutional content upgrade** (v0.2.0) | Rewrote the methodology page per the Institutional Equity Research Manual; upgraded `ReportContent` (decision-first executive summary, thesis map, moat scorecard, reverse-DCF priced-in, sensitivity grid, 25/50/25 scenario cards, risk register, catalyst register, evidence labels `[F]/[M]/[E]/[I]`, sources screener.in + in.marketscreener) and added lib/report helpers (`scenarioCases`, `weightedTarget`, `pricedInAnalysis`, `totalReturnPct`, `impliedEps`, `round1`) plus CSS for evidence tags/scenario cards. Build 172 static pages, lint clean, smoke-tested. |
 | 2026-08-06 | **Report engine** | `src/lib/report.ts` — `reportToc` (25), `financialHistory`, `forecasts`, `growthCagr`, `readingTime`, `upsides`, `ratingLanguage`. |

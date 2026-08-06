@@ -11,6 +11,8 @@
 - [x] Documentation system (v0.3.0) — README/OPENCODE/ARCHITECTURE/DECISIONS/
       TASKS/CHANGELOG/ROADMAP/DATABASE/API/COMPONENTS/STYLING/TESTING/
       DEPLOYMENT/SECURITY.
+- [x] Live deployment (v0.3.1) — repo on GitHub, Vercel auto-deploy on push
+      to `main` (`https://passive-research.vercel.app`), auto-commit policy.
 - [ ] Editorial review pass of report language (M3).
 - [ ] First chart increment: financial history trend + margin bridge (H2
       partial).

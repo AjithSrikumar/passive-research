@@ -28,15 +28,19 @@ static + sitemap + robots + 404).
 
 ## 3. CI/CD
 
-- **Current:** none committed. The gate is the manual checklist
-  (`docs/TESTING.md`): `lint` + `build` + smoke pass.
-- **Planned (M1/M2):** GitHub Actions (or Vercel) pipeline:
-  1. `npm ci`
-  2. `npm run lint`
-  3. `npm run build`
-  4. `npm audit --audit-level=high`
-  5. Smoke: `Invoke-WebRequest` health checks against the preview URL
-  6. Deploy on `main`.
+- **Current:** Vercel is connected to the GitHub repo (`AjithSrikumar/
+  passive-research`). **Every push to `main` triggers an automatic production
+  deployment** — no manual deploy steps, no other pipeline.
+  Deployed URL: `https://passive-research.vercel.app`; the custom domain
+  `passive-research.in` is attached on Vercel. Status—Project dashboard:
+  `vercel.com`. To verify a deploy: wait ~1–2 min, then
+  `Invoke-WebRequest https://passive-research.vercel.app` → 200.
+- **Pre-push gate (repo policy, OPENCODE.md):** `npm run lint` +
+  `npm run build` + smoke check + docs update. This runs locally before every
+  commit; the exact CI gate above is belt-and-suspenders.
+- **Augmentation options (M1/M2, not yet adopted):**
+  GitHub Actions to add `npm audit --audit-level=high` and health checks —
+  Vercel builds and deploys first; a failed post-deploy smoke can roll back.
 
 ## 4. Secrets
 

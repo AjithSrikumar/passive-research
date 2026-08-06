@@ -5,9 +5,38 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.3.1** — deployment wiring + auto-commit policy
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.3.1] — 2026-08-06
+
+### Added
+- **Auto-commit & auto-deploy policy**: every change is committed and pushed
+  to `main` immediately; Vercel (connected to the GitHub repo
+  `AjithSrikumar/passive-research`) auto-deploys on every push. Policy codified
+  in `OPENCODE.md` ("Commit & Deploy Policy"), `AGENTS.md` pointer, and
+  `docs/DEPLOYMENT.md`.
+- Live production deployment verified: `https://passive-research.vercel.app`
+  returns 200 on `/`, `/methodology`, `/company/hdfc-bank`, `/sitemap.xml`.
+
+### Changed
+- `OPENCODE.md`: workflow step 7 = commit & push (no longer "don't commit
+  unless asked"); shutdown checklist includes commit + post-deploy check.
+- `docs/DEPLOYMENT.md`: CI/CD section updated from "none" to Vercel
+  GitHub-integration auto-deploy.
+
+### Fixed
+- n/a.
+
+### Removed
+- n/a.
+
+### Security
+- n/a (unchanged).
 
 ---
 

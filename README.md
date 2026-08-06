@@ -74,12 +74,14 @@ hard-coded in `src/app/layout.tsx` (`metadataBase`) and used by
 ## Build & Deploy
 
 ```bash
-npm run lint && npm run build   # CI gate
-npm start                       # or deploy the Next.js app (Vercel recommended)
+npm run lint && npm run build   # CI gate (run before every commit)
+git push origin main            # triggers auto-deploy
 ```
 
-See [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for hosting, environments, and
-the release checklist.
+**Deployed on Vercel** (auto-deploy from the `main` branch, every push):
+[passive-research.vercel.app](https://passive-research.vercel.app). Custom
+domain `passive-research.in` attached. See [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md)
+for hosting, environments, and the release checklist.
 
 ## Folder Overview
 
