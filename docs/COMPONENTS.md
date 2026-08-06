@@ -1,6 +1,6 @@
 # COMPONENTS.md — UI Component Catalog
 
-> 12 components in `src/components/`. 6 are client (`"use client"`); 6 are
+> 14 components in `src/components/`. 6 are client (`"use client"`); 8 are
 > server components. All are presentational and data-accepting — none fetch
 > data. Update this file whenever a component or its props change.
 
@@ -9,17 +9,19 @@
 | Component | Type | Purpose |
 |---|---|---|
 | `Nav` | client | Top navigation, mobile menu, scroll state, theme toggle slot |
-| `Footer` | server | Site footer |
+| `Footer` | server | Site footer (newsletter form, socials, grouped legal) |
 | `ThemeToggle` | client | Dark/light toggle (class-driven) |
 | `SearchCompanies` | client | Live company search dropdown |
 | `CompanyCard` | server | Company summary card |
 | `CompanyLogo` | client | Real logo image with initials square fallback |
 | `RatingBadge` | server | Rating pill |
-| `SectorCard` | server | Sector summary card |
+| `SectorCard` | server | Sector summary card (counts, updated, explore) |
 | `SectorIcon` | server | 23 inline SVG sector icons |
 | `ResearchBrowser` | client | Filterable/sortable research list |
 | `ReportToc` | client | Sidebar scrollspy TOC |
 | `ReportContent` | server | 25-section report body |
+| `HeroPreview` | server | Home hero report-card illustration (desktop only) |
+| `LatestList` | server | Home "Recently Updated" grouped timeline list |
 
 ---
 
@@ -60,10 +62,23 @@
 
 ### `CompanyCard`
 - **Props:** `{ company: Company; compact?: boolean }`.
-- **Renders:** logo, name/ticker/industry, `RatingBadge`, `shortThesis`
-  (3-line clamp), stat strip (current/target/upside/mcap/sector/updated —
-  3-col × 2-row grid, `tabular-nums`, bottom-anchored for equal card
-  heights). Links to report.
+- **Renders:** logo (44px, 40px compact), name/ticker/industry,
+  `RatingBadge`, `shortThesis` (3-line clamp), stat strip
+  (current/target/upside/mcap/sector/updated — 3-col × 2-row grid,
+  `tabular-nums`, bottom-anchored for equal card heights; upside
+  emphasized `.stat-upside`). Links to report.
+
+### `HeroPreview`
+- **Props:** none.
+- **Renders:** decorative desktop-only report card (Trent as sample):
+  logo, rating badge, CSS bar chart, target/current/upside metrics,
+  floating target callout + "View a sample report" link. `aria-hidden`.
+
+### `LatestList`
+- **Props:** none.
+- **Renders:** 8 most-recently-updated companies as a grouped timeline list
+  (Today / Yesterday groups), each row: logo (40px), name/ticker, industry +
+  market cap, price + upside, rating badge, updated label.
 
 ### `CompanyLogo`
 - **Type:** client (uses `onError` fallback).
@@ -84,6 +99,9 @@
 
 ### `SectorCard`
 - **Props:** `{ slug: string }`.
+- **Renders:** accent icon (26px, 52px wrap), "{count} Companies" pill,
+  name, description, footer ("{count} Reports · Updated X" + explore
+  arrow). Hover: lift + accent border + icon fill/scale.
 - **Renders:** Sector name, description, `SectorIcon`, company count
   (`sectorCompanyCount`), latest update (`latestSectorUpdate`). Links to
   `/sectors/[slug]`.

@@ -14,15 +14,20 @@ export default function SectorCard({ slug }: { slug: string }) {
     <Link href={`/sectors/${slug}`} className="sector-card">
       <div className="sector-card-top">
         <span className="sector-icon-wrap">
-          <SectorIcon name={sector.icon} size={24} />
+          <SectorIcon name={sector.icon} size={26} />
         </span>
-        <span className="sector-count">{count} Research Reports</span>
+        <span className="sector-count">{count} Companies</span>
       </div>
       <h3>{sector.name}</h3>
       <p>{sector.description}</p>
-      <span className="sector-card-foot">
-        Updated {formatUpdated(updated)} <span className="arrow">→</span>
-      </span>
+      <div className="sector-card-foot">
+        <span>
+          <b>{count}</b> Reports · Updated {formatUpdated(updated)}
+        </span>
+        <span className="arrow" aria-hidden>
+          →
+        </span>
+      </div>
     </Link>
   );
 }

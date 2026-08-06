@@ -20,7 +20,7 @@ authentication.
 
 ## Current Project Status
 
-- **Version:** 0.5.0 (see `docs/CHANGELOG.md`)
+- **Version:** 0.5.1 (see `docs/CHANGELOG.md`)
 - **Build state:** GREEN — `npm run build` passes, 172 static pages; `npm run
   lint` passes clean.
 - **Deployment:** LIVE — Vercel auto-deploys from the `main` branch
@@ -31,10 +31,11 @@ authentication.
   for all 133 companies. Methodology page rewritten per the manual. Company
   logos (real brand images from `public/logos/`) replace the initials-only
   squares (v0.4.0).
-- **UI state:** v0.5.0 UI audit + design-system overhaul landed — token scales
-  (spacing/radius/elevation/type), mobile-first grids (1→5 columns),
-  tabular-nums, AA contrast, focus-visible rings, live universe counts
-  (see `docs/UI_AUDIT.md` + `docs/STYLING.md`).
+- **UI state:** v0.5.x upgrade landed — v0.5.0 design tokens/audit
+  (`docs/UI_AUDIT.md` + `docs/STYLING.md`) and v0.5.1 homepage redesign:
+  single 1280px container, two-column hero with `HeroPreview`, market
+  snapshot strip, rich sector cards, 4-col featured grid, `LatestList`
+  timeline, `CTA` band, upgraded footer (newsletter/socials).
 - **Docs state:** Full documentation system in `docs/` (ARCHITECTURE,
   DECISIONS, TASKS, CHANGELOG, ROADMAP, DATABASE, API, COMPONENTS, STYLING,
   TESTING, DEPLOYMENT, SECURITY, UI_AUDIT) + `OPENCODE.md` + rewritten

@@ -5,12 +5,70 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.5.1** — homepage redesign
 - **0.5.0** — UI audit & design-system overhaul
 - **0.4.0** — stock logos
 - **0.3.1** — deployment wiring + auto-commit policy
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.5.1] — 2026-08-06
+
+### Added
+- **`HeroPreview`** — desktop-only report-card illustration (Trent: logo,
+  rating, CSS bar chart, current/target/upside, floating target pill)
+  giving the hero a research-preview anchor.
+- **`LatestList`** — "Recently Updated Reports" as a grouped timeline (Today /
+  Yesterday groups), logo · name/ticker · industry+mcap · price/upside ·
+  rating · updated.
+- **Market snapshot strip** (`NIFTY 50`, `SENSEX`, `BANK NIFTY`, `INDIA VIX`,
+  `USD/INR`) below the hero with tabular-nums + directional colors.
+- **Hero quick links** — "Popular:" pill chips (HDFC Bank, TCS, Titan, Trent,
+  ICICI Bank) deep-linking to company/research pages.
+- **CTA band** — "See the Methodology" secondary button + eyebrow +
+  grid-texture overlay.
+- **Footer** — weekly-digest newsletter form (GET → /contact), social icons
+  (X, LinkedIn, GitHub), restructured legal links in the bottom bar,
+  larger footer logo, `1280px` container.
+
+### Changed
+- **Single site-wide container**: `--container: 1280px` applied to nav,
+  sections, footer, report-layout (was mixed 1240/1400).
+- **Hero redesign**: two-column desktop layout (`copy + HeroPreview`),
+  reduced vertical whitespace (72px → 48px bottom), `--type-hero`
+  clamp(52–64px), stats bumped to 38px tabular numerals with uppercase
+  labels and top divider.
+- **SectorCard**: 26px icon in 52px accent chip (hover: scale + accent fill),
+  "{n} Companies" pill, "{n} Reports · Updated X" footer, accent hover
+  border + lift.
+- **CompanyCard**: logo normalized to 44px (40px compact), upside emphasized
+  with `.stat-upside` (16px), stats divider `--border-strong`, accent hover
+  border.
+- **Featured grid**: capped at 4 columns/row (no 5-col ultra-wide).
+- **Mobile (≤480px)**: sector + company grids become horizontal scroll-snap
+  carousels; hero single column, reduced padding, 30px stats.
+- **Nav**: links 15px, `40px` hit targets, prominent accent `btn-nav` CTA
+  with shadow.
+- **Rating palette**: `Hold` → gray (was amber) for consistent semantics;
+  `.rating-hold` dark override added.
+- **Section titles/spec** `--type-section` clamp(32,4vw,40px); `gutter`
+  token drives page padding.
+
+### Fixed
+- Home hero no longer "empty" — preview card + quick links fill the
+  450–500px whitespace.
+- Inconsistent max-widths across sections unified to 1280px.
+
+### Removed
+- `hero-waves` SVG divider (replaced by market strip).
+- Left-aligned centered 820px hero; footer `footer-dot` rule.
+
+### Security
+- Newsletter form is a GET to `/contact` (no data persisted server-side);
+  social links use `rel="noopener noreferrer"`.
 
 ---
 

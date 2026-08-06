@@ -14,7 +14,7 @@ export default function CompanyCard({
   return (
     <Link href={`/company/${company.slug}`} className="company-card">
       <div className="company-card-top">
-        <CompanyLogo company={company} size={compact ? 44 : 52} />
+        <CompanyLogo company={company} size={compact ? 40 : 44} />
         <div className="company-card-id">
           <h3>{company.name}</h3>
           <p>
@@ -38,7 +38,7 @@ export default function CompanyCard({
         <div className="stat">
           <span className="stat-label">Upside</span>
           <span
-            className={`stat-value ${
+            className={`stat-value stat-upside ${
               company.upsidePct >= 0 ? "positive" : "negative"
             }`}
           >

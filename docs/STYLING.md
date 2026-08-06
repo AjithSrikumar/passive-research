@@ -39,7 +39,12 @@
 | `--shadow-hover` | `var(--shadow-md)` | Hover elevation |
 | `--space-1..16` | `4/8/12/16/20/24/32/40/48/64px` | 4px spacing scale (padding/gaps) |
 | `--gap-grid` | `24px` (`20px` ≤1024, `16px` ≤640) | Grid gutters |
-| `--type-xs..5xl` | `12/13.5/15/16.5/18/22/26/34/44px` | Type scale |
+| `--container` | `1280px` | Single site-wide content max-width |
+| `--gutter` | `28px` (18px ≤720) | Horizontal page padding |
+| `--border-strong` | `#e5e7eb` / `#334155` | Structured dividers (cards) |
+| `--type-xs..5xl` | `12/13.5/15/16/18/22/26/34/44px` | Type scale |
+| `--type-hero` | `clamp(52px, 6.4vw, 64px)` | Hero heading |
+| `--type-section` | `clamp(32px, 4vw, 40px)` | Section titles |
 | `--font-body` | `var(--font-dm-sans)`, DM Sans, Inter, system-ui | Body |
 | `--font-mono` | SFMono-Regular, Menlo, Consolas | Mono/figures |
 
@@ -47,8 +52,8 @@
 
 - **Family:** DM Sans (`next/font/google`, `--font-dm-sans`), latin subset,
   `display: swap`.
-- **Scale:** `h1` (hero ~clamp), `h2` section titles (reports/methodology),
-  `h3` sub-sections, body 15–16px, `line-height: 1.7`.
+- **Scale:** hero `--type-hero` (52–64px), section titles `--type-section`
+  (32–40px), card titles 20–22px, body 16px, metadata 13–14px.
 - **Micro-text:** `--text-45` captions, `eyebrow` (letter-spaced uppercase
   label above page heroes), `last-updated`.
 - **Numerics:** `font-variant-numeric: tabular-nums` applied to `.stat-value`,
@@ -70,12 +75,16 @@
 |---|---|
 | `.page-hero` / `.page-hero-inner` | Top hero band for content pages (eyebrow, h1, lede) |
 | `.section` / `.section-inner` | Standard content wrapper; `prose` class for article text |
+| `.hero` / `.hero-inner` | Home hero: two-column (copy + `HeroPreview`), badge, stats, quick links |
+| `.market-strip` | Home market snapshot band (indices ticker) |
 | `.report-hero` / `.report-hero-inner` | Company report header (breadcrumbs, title row, quick stats, byline) |
 | `.report-layout` | Two-column: `ReportToc` sidebar + `.report-content` |
 | `.report-section` | One of the 25 sections; `h2` + `.sec-num` (01–25) |
 | `.report-toc` | Sticky in-this-report sidebar (`.active` state) |
 | `.key-value-grid` / `.kv-item` | Metric stat cards (label + bold value; `.positive`/`.negative`) |
 | `.company-card` / `.sector-card` / `.peer-card` | Card grids; hover shadow lift |
+| `.latest-list` / `.latest-row` | Home "Recently Updated" grouped timeline |
+| `.cta-band` / `.cta-actions` | Blue call-to-action band with grid-texture overlay |
 
 ## 5. Component Patterns
 
@@ -85,7 +94,9 @@
   `padding: 12%`) or, on load failure, the gradient-initials square
   (`linear-gradient(135deg, logoColor, logoColorcc)` + white initials).
 - `.rating-badge` + `rating-<rating>` (e.g., `rating-strong-buy`,
-  `rating-buy`, `rating-hold` …) + `badge-sm|md|lg` — colored pills.
+  `rating-buy`, `rating-hold` …) + `badge-sm|md|lg` — colored pills;
+  palette: Strong Buy green, Buy blue, Accumulate teal, Hold gray,
+  Reduce orange, Sell red.
 - `.sector-icon` — 24×24 stroke SVG, `currentColor`.
 - `.stat` / `.stat-label` / `.stat-value` — CompanyCard stat strip.
 - `.callout` (accent left border + tint), `.callout-warn` (amber) — key
@@ -106,15 +117,20 @@
 ## 7. Responsive Rules
 
 - **Mobile-first grids** — `companies-grid` / `sectors-grid` column counts:
-  1 (base) → 2 (≥480) → 3 (≥768, ≥1100) → 4 (≥1280) → 5 (≥1600 for
-  companies). Gaps follow `--gap-grid` (24/20/16).
-- `.section-inner` max-width 1400px (dense ultra-wide layouts).
+  1 (base) → 2 (≥480) → 3 (≥768, ≥1100) → 4 (≥1280). Gaps follow
+  `--gap-grid` (24/20/16). No 5-column layout (cards need room).
+- **Mobile swipe:** below 480px, sector + company grids become horizontal
+  scroll-snap carousels (`.sectors-grid`, `.companies-grid` flex + snap).
+- `.section-inner` / `.nav-inner` / `.footer-inner` / `.report-layout` all
+  cap at `--container` (1280px) — single site-wide measure.
 - Desktop collapse rules (~1100px and below):
   - `ReportToc` sidebar hides (scrollspy removed from flow) — report
     remains single-column readable.
   - `key-value-grid`/`scenario-cards`/`peers-grid` become single/2-column.
   - Nav switches to hamburger menu (`Nav` `mobileOpen` state) ≤980px.
-- Fluid type via `clamp()` in hero headings.
+  - `HeroPreview` (desktop illustration) hidden <1100px.
+- Fluid type via `clamp()` in hero + section headings; hero collapses to
+  single column with reduced padding ≤720px.
 
 ## 8. Animations
 
