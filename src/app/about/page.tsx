@@ -4,8 +4,7 @@ import { sectors } from "@/lib/sectors";
 
 export const metadata: Metadata = {
   title: "About Passive",
-  description:
-    "Passive is an independent equity research platform covering 100+ Indian listed companies with institutional-grade analysis, transparent methodology, and clear ratings.",
+  description: `Passive is an independent equity research platform covering ${companies.length} Indian listed companies with institutional-grade analysis, transparent methodology, and clear ratings.`,
 };
 
 export default function AboutPage() {

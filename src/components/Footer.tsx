@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { sectors } from "@/lib/sectors";
+import { companies } from "@/lib/companies";
 
 export default function Footer() {
   return (
@@ -14,9 +15,10 @@ export default function Footer() {
             </span>
           </Link>
           <p>
-            Independent, institutional-grade equity research on more than 100
-            Indian listed companies. Screener-grade financials, DCF valuation,
-            and clear ratings — engineered to be decisive.
+            Independent, institutional-grade equity research on{" "}
+            {companies.length} Indian listed companies. Screener-grade
+            financials, DCF valuation, and clear ratings — engineered to be
+            decisive.
           </p>
           <p className="footer-disclaimer">
             Research is for informational purposes and does not constitute

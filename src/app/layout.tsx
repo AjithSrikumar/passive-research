@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import { companies } from "@/lib/companies";
+import { sectors } from "@/lib/sectors";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -12,14 +14,15 @@ const dmSans = DM_Sans({
 
 const BASE_URL = "https://passive-research.in";
 
+const coverage = `${companies.length}+ Indian listed companies across ${sectors.length} sectors`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
     default: "Passive — Professional Equity Research for Indian Stocks",
     template: "%s | Passive Research",
   },
-  description:
-    "Passive is an institutional-grade equity research platform covering 100+ Indian listed companies across 23 sectors. Screener-grade financials, DCF valuations, ratings and full-length research reports.",
+  description: `Passive is an institutional-grade equity research platform covering ${coverage}. Screener-grade financials, DCF valuations, ratings and full-length research reports.`,
   keywords: [
     "equity research India",
     "stock ratings India",
@@ -33,15 +36,13 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Passive",
     title: "Passive — Professional Equity Research",
-    description:
-      "Institutional-grade equity research on 100+ Indian listed companies across 23 sectors.",
+    description: `Institutional-grade equity research on ${coverage}.`,
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
     title: "Passive — Professional Equity Research",
-    description:
-      "Institutional-grade equity research on 100+ Indian listed companies across 23 sectors.",
+    description: `Institutional-grade equity research on ${coverage}.`,
   },
 };
 

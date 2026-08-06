@@ -5,11 +5,58 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.5.0** — UI audit & design-system overhaul
 - **0.4.0** — stock logos
 - **0.3.1** — deployment wiring + auto-commit policy
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.5.0] — 2026-08-06
+
+### Added
+- **`docs/UI_AUDIT.md`** — application-wide UI/UX audit report (system,
+  company-card, badge, responsive, a11y findings) with status tracking.
+- **Design tokens** in `globals.css`: spacing scale (`--space-1..16`),
+  radius scale (`--radius-sm/md/lg/card/pill`), elevation scale
+  (`--shadow-xs/sm/md/lg`, `--shadow-card/hover` now map to it), type scale
+  (`--type-xs..5xl`), and `--gap-grid` (24/20/16px responsive gutters).
+- `tabular-nums` on all numeric surfaces (`.stat-value`, `.kv-item b`,
+  `.report-quick-stat b`, `.fin-table td`, `.sc-target`) — no price jitter.
+- Global `:focus-visible` rings, `:target` scroll-margin, `.empty-state`
+  pattern, `prefers-reduced-motion` hardening (existing rule kept).
+
+### Changed
+- **Cards**: radius 15→20px, padding → `--space-5`, gap → `--space-3`;
+  `.company-thesis` clamps 3 lines (was 2); `.company-stats` bottom-anchored
+  (`margin-top: auto`) → equal-height cards in a row; hover lift 0.18→0.14s.
+- **Grids**: mobile-first column counts — companies/sectors 1 → 2 (≥480) →
+  3 (≥768/≥1100) → 4 (≥1280) → 5 (≥1600); `.section-inner` 1240→1400px for
+  ultra-wide density.
+- **Badges**: fixed heights per size (24/30/38px) instead of padding-based.
+- **Buttons/inputs**: 12px radius standard (`.btn`, `.search-bar`,
+  `.search-btn`, `.table-wrap`, `.kv-item`, `.scenario-card`, `.peer-card`);
+  `.btn`/`.search-btn`/`.filter-pill` min-height 44px; `.theme-toggle` 40→44px;
+  nav links ≥44px hit area.
+- **Contrast**: `--text-45` 0.45 → 0.58 alpha — WCAG AA for small text on
+  both themes.
+- **Hard-coded universe counts removed**: home hero badge, home/research/
+  about metadata, layout metadata, footer now render live `companies.length`
+  / `sectors.length` (133/23).
+- `ResearchBrowser` empty state → `.empty-state`; search results dropdown
+  `max-height: min(420px, 70vh)` + `overscroll-behavior: contain`.
+
+### Fixed
+- Home hero badge displayed stale "117 Indian Companies" (now dynamic 133).
+- Cards capped at 3 columns even on 1920px screens (now 4–5 across).
+
+### Removed
+- n/a.
+
+### Security
+- No new external dependencies; logos remain local static assets.
 
 ---
 

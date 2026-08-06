@@ -7,8 +7,7 @@ import { sectors } from "@/lib/sectors";
 
 export const metadata: Metadata = {
   title: "Research",
-  description:
-    "Browse full-length equity research reports on 100+ Indian listed companies — filter by sector, sort by rating or market cap.",
+  description: `Browse full-length equity research reports on ${companies.length} Indian listed companies — filter by sector, sort by rating or market cap.`,
 };
 
 export default function ResearchPage() {

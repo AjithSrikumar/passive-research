@@ -40,6 +40,7 @@
 
 | Date | Task | Notes |
 |---|---|---|
+| 2026-08-06 | **UI audit & design system** (v0.5.0) | `docs/UI_AUDIT.md` written (system/card/badge/responsive/a11y findings, status-tracked); added spacing/radius/elevation/type token scales + `--gap-grid`; mobile-first grids (1→2→3→4→5 cols), cards 20px radius + 3-line clamp + equal heights, badges fixed-height, controls 12px radius + 44px targets, `tabular-nums` everywhere, `--text-45` AA bump, `:focus-visible` rings, live universe counts (117→133) in hero/metadata/footer. Lint clean, build green (172 pages). |
 | 2026-08-06 | **Stock logos** (v0.4.0) | 133 company logos downloaded from Dhan's CDN (`images.dhan.co/symbol/<TICKER>.png`) into `public/logos/`; `CompanyLogo` now image-first with gradient-initials fallback (client component, `next/image` unoptimized); `.company-logo` CSS extended. |
 | 2026-08-06 | **Deployment wiring** (v0.3.1) | Repo pushed to `AjithSrikumar/passive-research`; Vercel connected — auto-deploy on every push to `main` (`https://passive-research.vercel.app`); auto-commit policy added to OPENCODE/AGENTS/DEPLOYMENT docs. |
 | 2026-08-06 | **Doc-engineering sprint** (v0.3.0) | `README`, `docs/ARCHITECTURE`, `docs/OPENCODE.md`, `docs/TASKS.md`, `docs/CHANGELOG.md`, `docs/DECISIONS.md`, `docs/ROADMAP.md`, `docs/DATABASE.md`, `docs/API.md`, `docs/COMPONENTS.md`, `docs/STYLING.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`, `docs/SECURITY.md`; AGENTS.md pointer. |

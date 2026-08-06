@@ -16,7 +16,7 @@
 | `--accent-strong` | `#1d4ed8` | `#2563eb` | Hover accent |
 | `--text` | `#111827` | `#f1f5f9` | Body text |
 | `--text-65` | `rgba(17,24,39,.65)` | `rgba(241,245,249,.65)` | Secondary text |
-| `--text-45` | `rgba(17,24,39,.45)` | `rgba(241,245,249,.45)` | Muted/caption text |
+| `--text-45` | `rgba(17,24,39,.58)` | `rgba(241,245,249,.58)` | Muted/caption text (AA-compliant on both themes) |
 | `--bg` | `#ffffff` | `#0b1220` | Page background |
 | `--bg-soft` | `#f8fafc` | `#0f172a` | Card/section background |
 | `--bg-softer` | `#f1f5f9` | `#131c2e` | Hover/raised surfaces |
@@ -27,16 +27,21 @@
 | `--positive` | `#059669` | `#34d399` | Upside/positive values |
 | `--negative` | `#dc2626` | `#f87171` | Downside/negative values |
 
-### Radii, shadows, fonts
+### Radii, shadows, spacing, type, fonts
 
-| Token | Value |
-|---|---|
-| `--radius-card` | `15px` |
-| `--radius-pill` | `1000px` |
-| `--shadow-card` | soft 1px/8px shadow |
-| `--shadow-hover` | raised 2px/16px shadow |
-| `--font-body` | `var(--font-dm-sans)`, DM Sans, Inter, system-ui |
-| `--font-mono` | SFMono-Regular, Menlo, Consolas |
+| Token | Value | Use |
+|---|---|---|
+| `--radius-sm/md/lg` | `6px / 8px / 12px` | Controls (buttons, inputs, tables, kv-items) |
+| `--radius-card` | `20px` | Cards |
+| `--radius-pill` | `1000px` | Badges, filter pills, nav pills |
+| `--shadow-xs/sm/md/lg` | 4-step elevation scale | `sm` = resting cards, `md` = hover, `lg` = overlays |
+| `--shadow-card` | `var(--shadow-sm)` | Resting card surface |
+| `--shadow-hover` | `var(--shadow-md)` | Hover elevation |
+| `--space-1..16` | `4/8/12/16/20/24/32/40/48/64px` | 4px spacing scale (padding/gaps) |
+| `--gap-grid` | `24px` (`20px` ≤1024, `16px` ≤640) | Grid gutters |
+| `--type-xs..5xl` | `12/13.5/15/16.5/18/22/26/34/44px` | Type scale |
+| `--font-body` | `var(--font-dm-sans)`, DM Sans, Inter, system-ui | Body |
+| `--font-mono` | SFMono-Regular, Menlo, Consolas | Mono/figures |
 
 ## 2. Typography
 
@@ -46,8 +51,10 @@
   `h3` sub-sections, body 15–16px, `line-height: 1.7`.
 - **Micro-text:** `--text-45` captions, `eyebrow` (letter-spaced uppercase
   label above page heroes), `last-updated`.
-- **Numerics:** tabular-ish rendering acceptable via mono in `report-byline`
-  and table cells; prices always via `formatPrice` (`₹` + Indian grouping).
+- **Numerics:** `font-variant-numeric: tabular-nums` applied to `.stat-value`,
+  `.kv-item b`, `.report-quick-stat b`, `.fin-table td`, `.sc-target` so
+  prices/capitals/valuations don't jitter; prices always via `formatPrice`
+  (`₹` + Indian grouping).
 
 ## 3. Dark Mode
 
@@ -98,28 +105,39 @@
 
 ## 7. Responsive Rules
 
-- Desktop-first; the layout collapses under ~900px:
+- **Mobile-first grids** — `companies-grid` / `sectors-grid` column counts:
+  1 (base) → 2 (≥480) → 3 (≥768, ≥1100) → 4 (≥1280) → 5 (≥1600 for
+  companies). Gaps follow `--gap-grid` (24/20/16).
+- `.section-inner` max-width 1400px (dense ultra-wide layouts).
+- Desktop collapse rules (~1100px and below):
   - `ReportToc` sidebar hides (scrollspy removed from flow) — report
     remains single-column readable.
   - `key-value-grid`/`scenario-cards`/`peers-grid` become single/2-column.
-  - Nav switches to hamburger menu (`Nav` `mobileOpen` state).
+  - Nav switches to hamburger menu (`Nav` `mobileOpen` state) ≤980px.
 - Fluid type via `clamp()` in hero headings.
 
 ## 8. Animations
 
 - Theme transition: `background/color 0.25s ease`.
 - `html { scroll-behavior: smooth; scroll-padding-top: 90px }`.
-- Card hover: `--shadow-hover` lift, 0.2–0.3s transitions.
+- Card hover: `--shadow-hover` lift, **0.14s** transitions.
 - No decorative keyframe animations (performance + institutional tone).
+- `prefers-reduced-motion: reduce` disables all animation/transition
+  durations (0.01ms).
 
 ## 9. Accessibility Notes
 
 - Decorative icons/avatars: `aria-hidden`.
 - Nav: hamburger toggles `aria-expanded`; skip-link patterns followed where
   practical.
-- Contrast: `--text-45` only for captions (large/auxiliary), never body copy.
-- Focus styles rely on default browser outlines; keep them visible on
-  `.dark` surfaces (check when adding surfaces).
+- Contrast: `--text-45` (now 0.58 alpha) passes WCAG AA for small text on
+  both themes; `--text-65` well above.
+- Focus: global `:focus-visible` ring (`2px solid var(--accent)`,
+  2px offset) — visible on both themes; `:target { scroll-margin-top }`.
+- Tap targets: `.btn` ≥44px height, `.filter-pill` ≥44px, `.theme-toggle`
+  44px, nav links ≥44px hit area.
+- Numbers use `tabular-nums`; rows `aria-hidden` decorations never carry
+  meaning.
 
 ## 10. Adding New Styles
 

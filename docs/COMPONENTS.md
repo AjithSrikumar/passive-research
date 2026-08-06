@@ -60,8 +60,10 @@
 
 ### `CompanyCard`
 - **Props:** `{ company: Company; compact?: boolean }`.
-- **Renders:** logo, name/ticker/industry, `RatingBadge`, `shortThesis`,
-  stat strip (current/target/upside/mcap/sector/updated). Links to report.
+- **Renders:** logo, name/ticker/industry, `RatingBadge`, `shortThesis`
+  (3-line clamp), stat strip (current/target/upside/mcap/sector/updated —
+  3-col × 2-row grid, `tabular-nums`, bottom-anchored for equal card
+  heights). Links to report.
 
 ### `CompanyLogo`
 - **Type:** client (uses `onError` fallback).

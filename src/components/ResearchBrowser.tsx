@@ -106,10 +106,10 @@ export default function ResearchBrowser() {
           ))}
         </div>
       ) : (
-        <p style={{ color: "var(--text-65)", padding: "30px 0" }}>
-          No companies match your filters. Try clearing the search or choosing a
-          different sector.
-        </p>
+        <div className="empty-state">
+          <p>No companies match your filters. Try clearing the search or
+          choosing a different sector.</p>
+        </div>
       )}
     </div>
   );
