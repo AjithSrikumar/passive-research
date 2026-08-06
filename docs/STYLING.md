@@ -72,7 +72,11 @@
 
 ## 5. Component Patterns
 
-- `.company-logo` — initials square, gradient from `logoColor`, `aria-hidden`.
+- `.company-logo` — logo square: `border-radius: 12px`, `overflow: hidden`,
+  light backdrop (`--bg-soft`), small shadow. Contains the company logo
+  image (`.company-logo img`: `object-fit: contain`, `background: #fff`,
+  `padding: 12%`) or, on load failure, the gradient-initials square
+  (`linear-gradient(135deg, logoColor, logoColorcc)` + white initials).
 - `.rating-badge` + `rating-<rating>` (e.g., `rating-strong-buy`,
   `rating-buy`, `rating-hold` …) + `badge-sm|md|lg` — colored pills.
 - `.sector-icon` — 24×24 stroke SVG, `currentColor`.

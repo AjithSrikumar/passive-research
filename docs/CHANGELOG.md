@@ -5,10 +5,45 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.4.0** — stock logos
 - **0.3.1** — deployment wiring + auto-commit policy
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.4.0] — 2026-08-06
+
+### Added
+- Real company logos for all 133 companies, sourced from Dhan's stock-logo
+  CDN (`https://images.dhan.co/symbol/<NSE_TICKER>.png`), stored locally in
+  `public/logos/` (133 PNGs).
+- `CompanyLogo` now renders the image-first with the previous
+  gradient-initials square as an automatic fallback (client component,
+  `onError` swap; `next/image` + `unoptimized`).
+
+### Changed
+- `src/components/CompanyLogo.tsx` — now `"use client"`; renders
+  `/logos/<ticker>.png` with initials fallback.
+- `src/app/globals.css` — `.company-logo` gets `overflow: hidden` and a light
+  backdrop; new `.company-logo img` rule (`object-fit: contain`, white
+  padding backdrop, `padding: 12%`).
+- Corrected stale universe count in docs: **133 companies** (not 117) across
+  README, ARCHITECTURE, COMPONENTS, DATABASE, API, DECISIONS, DEPLOYMENT,
+  ROADMAP, OPENCODE.
+- `CompanyLogo` is now the 6th client component (COMPONENTS.md summary
+  updated).
+
+### Fixed
+- n/a.
+
+### Removed
+- n/a.
+
+### Security
+- Logos are static assets committed to the repo; no external image requests
+  at runtime (privacy/performance win, no CDN dependency).
 
 ---
 
@@ -72,7 +107,7 @@ Version history:
 
 ### Added
 - Institutional report content per the *Institutional Equity Research Manual*
-  (2026 edition), applied across all 117 company pages:
+  (2026 edition), applied across all 133 company pages:
   - Decision-first Executive Summary (rating/target/implied + total return,
     "why now", "what is priced in", three drivers, falsifier).
   - Thesis map (Driver | Evidence | Model impact | Signpost | Failure test),
@@ -114,7 +149,7 @@ Version history:
 ### Added
 - Full Next.js 16 (App Router, TypeScript, Turbopack) conversion of the
   Docify-based site into **Passive**:
-  - Data layer: `src/lib/companies.ts` (117 companies, `Company` interface,
+  - Data layer: `src/lib/companies.ts` (133 companies, `Company` interface,
     helpers: `getCompany`, `getCompaniesBySector`, `getPeers`,
     `sortByRating`, `sectorCompanyCount`, `latestSectorUpdate`, formatters
     `formatCr` / `formatIndian` / `formatPrice` / `formatUpdated`),

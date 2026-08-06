@@ -29,7 +29,7 @@ All routes respond `GET` with `text/html` (pre-rendered). Base URL:
 
 | Route | Method | Content |
 |---|---|---|
-| `/sitemap.xml` | GET | XML sitemap: 11 static pages (lastmod = build date), 23 sector pages, 117 company pages (lastmod = `updatedDate`) |
+| `/sitemap.xml` | GET | XML sitemap: 11 static pages (lastmod = build date), 23 sector pages, 133 company pages (lastmod = `updatedDate`) |
 | `/robots.txt` | GET | `User-agent: *` / `Allow: /` + sitemap pointer |
 
 ## 2. Structured Data (JSON-LD)

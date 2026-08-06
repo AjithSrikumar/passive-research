@@ -13,7 +13,7 @@ pre-rendered HTML.
 
 ```mermaid
 flowchart LR
-  A[src/lib/companies.ts<br/>117 companies] --> C[Report engine<br/>src/lib/report.ts]
+  A[src/lib/companies.ts<br/>133 companies] --> C[Report engine<br/>src/lib/report.ts]
   B[src/lib/sectors.ts<br/>23 sectors] --> C
   C --> D[SSG pages<br/>src/app/**]
   D --> E[Static HTML + JSON-LD<br/>172 pages]
@@ -69,7 +69,7 @@ src/
     robots.ts             # robots.txt
   components/             # 12 reusable components (5 client, 7 server)
   lib/                    # Pure TypeScript logic + data (no React)
-    companies.ts          # Company interface, 117 rows, helpers
+    companies.ts          # Company interface, 133 rows, helpers
     sectors.ts            # Sector interface, 23 rows, helpers
     report.ts             # reportToc + report math helpers
 ```
@@ -82,7 +82,7 @@ src/
 flowchart TB
   ROWS[companies.ts ROWS tuples] --> MAP[companies.map() -> Company[]]
   SECTORS[sectors.ts] --> LIBS[lib helpers]
-  MAP --> SSG[generateStaticParams<br/>117 slugs]
+  MAP --> SSG[generateStaticParams<br/>133 slugs]
   MAP --> REPORT[report.ts<br/>financialHistory/forecasts/scenarios/pricedIn]
   SSG --> PAGE[company/[slug]/page.tsx]
   REPORT --> PAGE
@@ -97,7 +97,7 @@ flowchart TB
 - Client components hydrate for interactivity only:
   - `Nav` (mobile menu, scroll state)
   - `ThemeToggle` (dark mode)
-  - `SearchCompanies` (live dropdown over the 117-company index)
+  - `SearchCompanies` (live dropdown over the 133-company index)
   - `ResearchBrowser` (filter/sort of report list; reads `useSearchParams`)
   - `ReportToc` (IntersectionObserver scrollspy over `[data-report-section]`)
 
@@ -122,7 +122,7 @@ script so there is no flash; the toggle intentionally drives the DOM directly
 
 | Route type | Strategy | Notes |
 |---|---|---|
-| `/company/[slug]` | **SSG** (`generateStaticParams`, `dynamicParams=false`) | 117 pages pre-rendered; unknown slug → 404 |
+| `/company/[slug]` | **SSG** (`generateStaticParams`, `dynamicParams=false`) | 133 pages pre-rendered; unknown slug → 404 |
 | `/sectors/[slug]` | **SSG** (`generateStaticParams`) | 23 pages |
 | All other pages | **Static** | Prerendered at build |
 | `sitemap.xml` / `robots.txt` | Generated routes | Built from `metadataBase` (`https://passive-research.in`) |
@@ -210,11 +210,12 @@ Development logs come from `next dev`.
 
 ## 13. Performance Strategy
 
-- 100% static HTML; zero client data fetching; zero images (initials-based
-  logos render as CSS gradients — no image requests).
+- 100% static HTML; zero client data fetching. Logos are committed local
+  assets in `public/logos/` (`next/image` unoptimized, initials-square
+  fallback) — no runtime image requests to third parties.
 - One stylesheet, no third-party CSS; DM Sans is self-hosted by
   `next/font` (no Google Fonts request at runtime).
-- Client JS is limited to the 5 interactive components; everything else is RSC
+- Client JS is limited to the 6 interactive components; everything else is RSC
   output.
 - `scroll-padding-top` + smooth scroll for anchor navigation.
 - Build-time goal: no network in the browser beyond the HTML/RSC payload.

@@ -11,7 +11,7 @@
 ## Project Summary
 
 **Passive** — an institutional-grade equity research platform for Indian listed
-stocks. A fully static Next.js 16 App Router site: 117 company report pages,
+stocks. A fully static Next.js 16 App Router site: 133 company report pages,
 23 sector pages, and standard content pages, all generated at build time from
 TypeScript data modules. Reports follow a fixed 25-section institutional
 framework with evidence labels, driver-based forecasting, reverse-DCF
@@ -20,7 +20,7 @@ authentication.
 
 ## Current Project Status
 
-- **Version:** 0.3.1 (see `docs/CHANGELOG.md`)
+- **Version:** 0.4.0 (see `docs/CHANGELOG.md`)
 - **Build state:** GREEN — `npm run build` passes, 172 static pages; `npm run
   lint` passes clean.
 - **Deployment:** LIVE — Vercel auto-deploys from the `main` branch
@@ -28,7 +28,9 @@ authentication.
   canonical origin (see `docs/DEPLOYMENT.md`).
 - **Content state:** The institutional upgrade (executive summary, thesis map,
   reverse-DCF, scenarios, risk/catalyst registers, evidence labels) is complete
-  for all 117 companies. Methodology page rewritten per the manual.
+  for all 133 companies. Methodology page rewritten per the manual. Company
+  logos (real brand images from `public/logos/`) replace the initials-only
+  squares (v0.4.0).
 - **Docs state:** Full documentation system in `docs/` (ARCHITECTURE,
   DECISIONS, TASKS, CHANGELOG, ROADMAP, DATABASE, API, COMPONENTS, STYLING,
   TESTING, DEPLOYMENT, SECURITY) + `OPENCODE.md` + rewritten `README.md`.
@@ -120,10 +122,11 @@ public/            Static assets
 ## Component Patterns
 
 - Server components render data; client components add the bare minimum of
-  interactivity. Only 5 components are `"use client"`.
+  interactivity. Only 6 components are `"use client"`.
 - Components accept data (a `Company`/`Sector` object) and never fetch.
-- Links via `next/link`. Icons are inline SVG strokes. Logos are CSS-gradient
-  initial squares (no images: lot of green).
+- Links via `next/link`. Icons are inline SVG strokes. Company logos are
+  real images from `public/logos/<TICKER>.png` (Dhan-sourced, committed);
+  `CompanyLogo` falls back to the gradient-initials square on load failure.
 - Full catalog: `docs/COMPONENTS.md`.
 
 ## Architecture Constraints
@@ -180,7 +183,7 @@ point. Not a bug; by design.
 See `docs/CHANGELOG.md` v0.1.0–v0.3.0 and `docs/DECISIONS.md`. Highlights:
 
 - Docify → Next.js full conversion (ADR-001, deleted legacy files).
-- 117-company + 23-sector data model, report engine, 172-page static build.
+- 133-company + 23-sector data model, report engine, 172-page static build.
 - Institutional upgrade: executive summary decision film, thesis map, reverse
   DCF, scenario cards, risk/catalyst registers, evidence labels (ADR-006).
 - Methodology page rewrite per the Institutional Research Manual.

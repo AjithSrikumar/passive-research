@@ -1,6 +1,6 @@
 # Passive — Professional Equity Research for Indian Stocks
 
-An institutional-grade equity research platform covering **117 Indian listed
+An institutional-grade equity research platform covering **133 Indian listed
 companies across 23 sectors**. Every company gets a structured, 25-section
 research report built to a standard an institutional portfolio manager can act
 on: decision-first executive summary, driver-based forecasts, DCF + peer
@@ -14,7 +14,7 @@ a monitorable risk register, and dated catalysts.
 
 ## Product Overview
 
-- **117 full company reports** — SSG pages, each with a fixed 25-section
+- **133 full company reports** — SSG pages, each with a fixed 25-section
   institutional framework.
 - **21 sector pages** with coverage counts, descriptions, and icon sets.
 - **Ratings** — Strong Buy / Buy / Accumulate / Hold / Reduce / Sell, each with
@@ -96,13 +96,13 @@ src/
     latest-research/   # Recently updated reports
     coverage-universe/ # Full company list
     sectors/           # Sector index + [slug] sector page
-    company/[slug]/    # 117 SSG report pages (JSON-LD + ReportToc + ReportContent)
+    company/[slug]/    # 133 SSG report pages (JSON-LD + ReportToc + ReportContent)
     not-found.tsx      # 404
     sitemap.ts         # sitemap.xml (metadataBase-driven)
     robots.ts          # robots.txt
   components/          # 12 reusable components (5 client, 7 server)
   lib/
-    companies.ts       # 117-company dataset + helpers (the "database")
+    companies.ts       # 133-company dataset + helpers (the "database")
     sectors.ts         # 23-sector dataset + helpers
     report.ts          # 25-section framework + report math helpers
   public/              # Static assets

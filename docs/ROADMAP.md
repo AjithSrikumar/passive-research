@@ -7,7 +7,7 @@
 
 **Theme: Institutional content + documentation system.**
 
-- [x] Institutional article upgrade (v0.2.0) — all 117 reports + methodology.
+- [x] Institutional article upgrade (v0.2.0) — all 133 reports + methodology.
 - [x] Documentation system (v0.3.0) — README/OPENCODE/ARCHITECTURE/DECISIONS/
       TASKS/CHANGELOG/ROADMAP/DATABASE/API/COMPONENTS/STYLING/TESTING/
       DEPLOYMENT/SECURITY.

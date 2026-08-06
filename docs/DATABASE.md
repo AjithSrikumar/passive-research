@@ -10,7 +10,7 @@
 
 ### Company (`src/lib/companies.ts`)
 
-`Company` is the core entity; 117 instances are built from `ROWS` tuples.
+`Company` is the core entity; 133 instances are built from `ROWS` tuples.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -90,7 +90,7 @@ Enforced by **TypeScript at build time** (no runtime enforcement needed):
 
 | Lookup | Equivalent index |
 |---|---|
-| `getCompany(slug)` | PK on `slug` (array scan — 117 items) |
+| `getCompany(slug)` | PK on `slug` (array scan — 133 items) |
 | `getCompaniesBySector(sectorSlug)` | index on `sector` |
 | `getPeers(company, count)` | index on `sector` + sort on `marketCapCr` |
 | `sectorCompanyCount(sectorSlug)` | index on `sector` |
@@ -101,7 +101,7 @@ Enforced by **TypeScript at build time** (no runtime enforcement needed):
 
 | Version | Migration |
 |---|---|
-| 0.1.0 | Created `companies.ts` (117 companies) + `sectors.ts` (23 sectors) |
+| 0.1.0 | Created `companies.ts` (133 companies) + `sectors.ts` (23 sectors) |
 | 0.2.0 | No schema change; new derived math in `report.ts` |
 | 0.3.0 | No schema change; documentation of the schema |
 

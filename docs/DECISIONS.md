@@ -36,7 +36,7 @@
 ## ADR-002 — Static data modules instead of a database / backend
 
 - **Date:** 2026-08-01 (log entry 2026-08-06)
-- **Context:** The coverage universe (117 companies, 23 sectors) and report
+- **Context:** The coverage universe (133 companies, 23 sectors) and report
   math are deterministic.
 - **Problem:** A DB/API would add infrastructure, auth, and latency for data
   that changes only when an analyst publishes a new estimate.
@@ -101,7 +101,7 @@
 ## ADR-005 — Report framework: 25 fixed sections with single source of truth
 
 - **Date:** 2026-08-02 (log entry 2026-08-06)
-- **Context:** Institutional consistency across 117 reports; the sidebar TOC,
+- **Context:** Institutional consistency across 133 reports; the sidebar TOC,
   the Methodology page, and report rendering must agree.
 - **Problem:** Divergent section lists would corrupt comparison and
   navigation.
@@ -133,7 +133,7 @@
   standard.
 - **Options:** (a) adopt the manual wholesale for all articles; (b) partial
   adoption.
-- **Decision:** Full adoption across `ReportContent` (all 117 articles) and
+- **Decision:** Full adoption across `ReportContent` (all 133 articles) and
   the Methodology page: decision-first executive summary; thesis map; moat
   scorecard; reverse-DCF "what is priced in"; 25/50/25 scenarios with
   operating assumptions; risk register with leading indicators; catalyst
@@ -177,7 +177,7 @@
 ## ADR-008 — SSG with `dynamicParams = false` + generated sitemap/robots
 
 - **Date:** 2026-08-02 (log entry 2026-08-06)
-- **Context:** 117 company pages and 23 sector pages; canonical origin
+- **Context:** 133 company pages and 23 sector pages; canonical origin
   `https://passive-research.in`.
 - **Problem:** SEO quality, unknown-slug behavior, and URL canonicalization.
 - **Options:** (a) default dynamic rendering; (b) SSG with params and 404 for
@@ -216,6 +216,34 @@
 
 ---
 
+## ADR-010 — Real company logos as committed static assets
+
+- **Date:** 2026-08-06
+- **Context:** The app originally rendered company identifiers as
+  CSS-gradient initials squares to avoid image assets entirely.
+- **Problem:** Real brand logos materially improve credibility and scannability
+  of an equity research platform.
+- **Options:** (a) keep initials-only squares; (b) hot-link external logo CDNs
+  (Dhan/other) at runtime; (c) download logos once and commit to
+  `public/logos/`.
+- **Decision:** (c) — 133 logos fetched from Dhan's public stock-logo CDN
+  (`https://images.dhan.co/symbol/<NSE_SYMBOL>.png`) and committed under
+  `public/logos/` named by the app's `ticker` field (Dhan's symbol differs
+  from the stored ticker in one case: `LTIM` → stored as `LTIMIND.png`).
+  `CompanyLogo` renders the image via `next/image` (`unoptimized`) and falls
+  back to the gradient-initials square on load failure.
+- **Reasoning:** No runtime third-party image requests (privacy, speed,
+  stability); build-time availability is type-checked by route count; brand
+  logos stay consistent across deployments.
+- **Tradeoffs:** Repo size grows (~1 MB of PNGs); logos are third-party
+  trademarks used for identification/nominative purposes only.
+- **Consequences:** Any new company added to `companies.ts` must ship a logo
+  file `public/logos/<ticker>.png` or render the initials fallback.
+- **Future review:** If a company rebrands or a logo is wrong, replace the
+  file in `public/logos/` (data-driven; no code change).
+
+---
+
 ## Backlog — decision candidates (not yet ADRs)
 
 - **Proposed ADR:** Adopt Vitest for `src/lib` unit tests (task H3).
@@ -227,4 +255,4 @@
 
 *Index of ADRs: 001 platform · 002 data layer · 003 styling · 004 dark mode ·
 005 report framework · 006 methodology · 007 synthetic financials ·
-008 SSG/SEO · 009 docs governance.*
+008 SSG/SEO · 009 docs governance · 010 logo assets.*

@@ -1,6 +1,6 @@
 # COMPONENTS.md — UI Component Catalog
 
-> 12 components in `src/components/`. 5 are client (`"use client"`); 7 are
+> 12 components in `src/components/`. 6 are client (`"use client"`); 6 are
 > server components. All are presentational and data-accepting — none fetch
 > data. Update this file whenever a component or its props change.
 
@@ -13,7 +13,7 @@
 | `ThemeToggle` | client | Dark/light toggle (class-driven) |
 | `SearchCompanies` | client | Live company search dropdown |
 | `CompanyCard` | server | Company summary card |
-| `CompanyLogo` | server | Initials logo (CSS gradient) |
+| `CompanyLogo` | client | Real logo image with initials square fallback |
 | `RatingBadge` | server | Rating pill |
 | `SectorCard` | server | Sector summary card |
 | `SectorIcon` | server | 23 inline SVG sector icons |
@@ -40,7 +40,7 @@
 
 ### `SearchCompanies`
 - **Props:** `{ size?: "lg" | "md" }` — `lg` for the home hero, `md` for nav.
-- **Purpose:** Live dropdown filtering the 117-company index by name, ticker,
+- **Purpose:** Live dropdown filtering the 133-company index by name, ticker,
   industry. Links to `/company/[slug]`.
 
 ### `ResearchBrowser`
@@ -64,8 +64,17 @@
   stat strip (current/target/upside/mcap/sector/updated). Links to report.
 
 ### `CompanyLogo`
+- **Type:** client (uses `onError` fallback).
 - **Props:** `{ company: Company; size?: number }` (default 52).
-- **Renders:** initials square with `logoColor` gradient; `aria-hidden`.
+- **Renders:** the company's real logo image (`/logos/<ticker>.png`,
+  `next/image` + `unoptimized`, `object-fit: contain` on a white
+  backdrop) inside the `.company-logo` square; if the image fails to
+  load, swaps to the gradient-initials square (`logoColor` gradient).
+  `aria-hidden`; `loading="lazy"`.
+- **Asset contract:** logo files live in `public/logos/<NSE_TICKER>.png`
+  (one per company, sourced from Dhan's stock-logo CDN, committed to
+  the repo). Add the file whenever a new company row is added, or the
+  fallback initials render instead.
 
 ### `RatingBadge`
 - **Props:** `{ rating: Company["recommendation"]; size?: "sm" | "md" | "lg" }`.
