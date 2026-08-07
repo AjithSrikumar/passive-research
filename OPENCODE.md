@@ -20,12 +20,13 @@ ADR-011); the build and all pages remain fully static and DB-independent.
 Since v0.7.0 selected companies can carry a **bespoke research note**
 (`src/lib/notes/` + `ReportNote`, ADR-012) rendered instead of the generic
 framework when the slug matches — the generic 25-section reports remain
-untouched. Currently bespoke: **Trent** (institutional redesign on verified
-primary-source data).
+untouched. Currently bespoke: **Trent, HDFC Bank, Reliance Industries, Titan,
+DMart (Avenue Supermarts), Bharti Airtel** (v0.8.0; all six institutional
+redesigns on verified primary-source data).
 
 ## Current Project Status
 
-- **Version:** 0.7.0 (see `docs/CHANGELOG.md`)
+- **Version:** 0.8.0 (see `docs/CHANGELOG.md`)
 - **Build state:** GREEN — `npm run build` passes, 172 static pages + 3
   dynamic API routes; `npm run lint` passes clean. Build works with **no**
   `DATABASE_URL` (pages never read the DB).
@@ -40,9 +41,11 @@ primary-source data).
   for production API reads to hit the DB.
 - **Content state:** The institutional upgrade (executive summary, thesis map,
   reverse-DCF, scenarios, risk/catalyst registers, evidence labels) is complete
-  for all 133 companies. **Trent** (v0.7.0) has a bespoke initiation-note
-  rewrite on verified primary-source data (FY22–FY26 + Q1 FY27 press
-  releases/AR/shareholding/consensus) — see `src/lib/notes/trent.ts`.
+  for all 133 companies. **Trent** (v0.7.0) and **HDFC Bank, Reliance, Titan,
+  DMart, Bharti Airtel** (v0.8.0) have bespoke institution-grade notes on
+  verified primary-source data (Q1 FY27 results, FY26 disclosures, consensus,
+  live quotes) — see `src/lib/notes/trent.ts`, `hdfc-bank.ts`, `reliance.ts`,
+  `titan.ts`, `dmart.ts`, `bharti-airtel.ts`.
   Methodology page rewritten per the manual. Company
   logos (real brand images from `public/logos/`) replace the initials-only
   squares (v0.4.0).
@@ -206,9 +209,9 @@ public/            Static assets
 
 - Financials are **synthetic** (derived from `Company` fields) and marked
   `(E)` — they are model-implied, and a disclaimer lives on the Methodology
-  page. **Exception (v0.7.0):** Trent's row and its bespoke note use verified
-  primary-source figures (disclosed FY22–FY26/Q1-FY27 data, consensus from
-  in.marketscreener); estimates in the note remain marked `(E)`.
+  page. **Exception (v0.7.0+):** the six bespoke companies (Trent, HDFC Bank,
+  Reliance, Titan, DMart, Bharti Airtel) have rows and notes using verified
+  primary-source figures; estimates in the notes remain marked `(E)`.
 - No test runner; manual smoke only up to now (checked in `docs/TESTING.md`).
 - `sectors/[slug]` route does not set `dynamicParams=false` (that's fine —
   unknown slugs → 404 via `getSector` guard).
@@ -229,12 +232,13 @@ See `docs/CHANGELOG.md` v0.1.0–v0.3.0 and `docs/DECISIONS.md`. Highlights:
 - 133-company + 23-sector data model, report engine, 172-page static build.
 - Institutional upgrade: executive summary decision film, thesis map, reverse
   DCF, scenario cards, risk/catalyst registers, evidence labels (ADR-006).
-- **Bespoke Trent research note (v0.7.0, ADR-012)**: full institutional
-  redesign of the Trent report (variant perception, driver matrix, three
-  evidence-linked theses, shareholding pattern, real fiscal years,
-  consensus-anchored valuation, risk register, downloadable sources) on
-  verified primary-source data; responsive stacked table cards, print rules,
-  byline/evidence-legend/AI wording removed for Trent only.
+- **Bespoke research notes (v0.7.0-v0.8.0, ADR-012)**: Trent plus HDFC Bank,
+  Reliance, Titan, DMart, Bharti Airtel carry full institutional redesigns of
+  their reports (variant perception, driver matrix, evidence-linked theses,
+  shareholding pattern, real fiscal years, consensus-anchored valuation, risk
+  register, downloadable sources) on verified primary-source data; responsive
+  stacked table cards, print rules, byline/evidence-legend/AI wording removed
+  for bespoke companies.
 - Methodology page rewrite per the Institutional Research Manual.
 - Performance/SEO: sitemap, robots, metadataBase, JSON-LD, dark mode.
 - Documentation system (this sprint, v0.3.0).
@@ -342,4 +346,4 @@ change. If any of the above is missed, the task is **not fixed**.
 
 ---
 
-*Last updated: 2026-08-07 (v0.7.0 — bespoke Trent note, ADR-012)*
+*Last updated: 2026-08-07 (v0.8.0 — bespoke notes ×5, ADR-012 extension)*

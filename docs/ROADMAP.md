@@ -20,7 +20,11 @@
 - [x] **Bespoke Trent research note (v0.7.0, ADR-012)** — full institutional
       redesign/rewrite of the Trent report on verified primary-source data
       via the `src/lib/notes/` registry + `ReportNote` renderer (first of the
-      "analyst-authored notes" vision below).
+      "analyst-authored notes" vision).
+- [x] **Bespoke notes ×5 — HDFC Bank, Reliance, Titan, DMart, Bharti Airtel
+      (v0.8.0, ADR-012 extension)** — the same institutional note structure
+      on verified primary-source data for five more large-caps; six of 133
+      reports are now bespoke.
 - [ ] Editorial review pass of report language (M3).
 - [ ] First chart increment: financial history trend + margin bridge (H2
       partial).
@@ -71,4 +75,4 @@
 
 ---
 
-*Last updated: 2026-08-07 (Sprint 3 — Trent bespoke note v0.7.0)*
+*Last updated: 2026-08-07 (Sprint 3 closed — six bespoke notes v0.7.0/v0.8.0)*

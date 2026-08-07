@@ -84,6 +84,11 @@ src/
     notes/                # Bespoke research notes (ADR-012)
       types.ts            # ResearchNote typed block model
       trent.ts            # Bespoke Trent note content
+      hdfc-bank.ts        # Bespoke HDFC Bank note content
+      reliance.ts         # Bespoke Reliance note content
+      titan.ts            # Bespoke Titan note content
+      dmart.ts            # Bespoke DMart note content
+      bharti-airtel.ts    # Bespoke Bharti Airtel note content
       index.ts            # slug -> note registry (getNote/hasNote/noteToc)
 ```
 
@@ -225,10 +230,12 @@ When a company deserves a treatment the generic framework cannot express, a
 **bespoke note** is added to `src/lib/notes/` and registered by company slug.
 If a note exists for the slug, `company/[slug]/page.tsx` renders `ReportNote`
 (with the note's own TOC) instead of the generic `ReportContent`; the other
-132 companies are untouched. The Trent note (v0.7.0) follows an initiation-note
-structure: it replaces *Corporate Governance* with *Shareholding pattern*,
-uses real fiscal years (FY22–FY26 + Q1 FY27), omits the byline/evidence
-legend/AI wording, sources each claim to downloadable primary documents, and
+128 companies are untouched. Six companies currently have notes: Trent
+(v0.7.0) plus HDFC Bank, Reliance Industries, Titan, DMart (Avenue Supermarts)
+and Bharti Airtel (v0.8.0). Each follows an initiation-note structure: it
+replaces *Corporate Governance* with *Shareholding pattern*, uses real fiscal
+years (FY22–FY26 + Q1 FY27), omits the byline/evidence legend/AI wording,
+sources each claim to downloadable primary documents, and
 renders every table as responsive stacked cards on mobile (no horizontal
 scroll). Bespoke notes intentionally waive ADR-006 evidence labels in favor
 of inline citations, `(E)` marks, and a Sources & downloads section (the full

@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.8.0** — bespoke notes ×5 (HDFC Bank, Reliance, Titan, DMart, Airtel)
 - **0.7.0** — bespoke Trent research note (institutional redesign)
 - **0.6.0** — Postgres mirror + read-only JSON API
 - **0.5.3** — dark default + homepage refinement
@@ -16,6 +17,40 @@ Version history:
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.8.0] — 2026-08-07
+
+Extended the bespoke-note layer (ADR-012) from Trent to **five more large-cap
+reports — HDFC Bank, Reliance Industries, Titan, DMart (Avenue Supermarts) and
+Bharti Airtel** — each rebuilt on verified primary-source data with the same
+institutional structure as the Trent note. The generic 25-section framework
+and all other company reports remain untouched.
+
+### Added
+- Bespoke notes in `src/lib/notes/`: **`hdfc-bank.ts`** (Q1 FY27 PAT
+  ₹19,060 Cr, NIM 3.26%/3.40%, GNPA 1.17%, RoE 14.1%), **`reliance.ts`** (Q1
+  FY27 record quarter, ₹3.40 lakh Cr gross revenue, Jio DRHP filed, net cash
+  ₹2.46 lakh Cr), **`titan.ts`** (FY26 income ex-bullion ₹76,078 Cr +33%,
+  PAT ₹5,073 Cr +52%, EBIT margin 10.6%, Damas consolidation) and
+  **`dmart.ts`** (Q1 FY27 revenue +14.9%, EBITDA 8.3%, mature-store LFL +5.5%)
+  and **`bharti-airtel.ts`** (Q1 FY27 PAT ₹8,167 Cr +37%, ARPU ₹264, Africa
+  stake >79%).
+- Registered all five in `src/lib/notes/index.ts` — `getNote`/`hasNote`/
+  `noteToc` now serve 6 bespoke slugs.
+- Updated the corresponding rows in `src/lib/companies.ts` to verified
+  primary-source figures (price, target, market cap, FY26 revenue/PAT, margin,
+  ROE, P/E, thesis) and pinned their `updatedDate` to the note date.
+
+### Changed
+- `docs/ARCHITECTURE.md`, `OPENCODE.md`, `README.md` and `docs/TASKS.md`
+  updated to reflect the six-note bespoke set.
+
+Verified with `npm run lint` (clean), `npm run build` (174 pages green), and a
+dev-server smoke pass (`/company/hdfc-bank`, `/company/reliance-industries`,
+`/company/titan`, `/company/avenue-supermarts`, `/company/bharti-airtel` all
+200 with the note body present).
 
 ---
 

@@ -70,7 +70,7 @@ const AUTHORS = [
 
 const ROWS: Row[] = [
   // ---------- Banking ----------
-  ["HDFC Bank", "HDFCBANK", "banking", "Private Sector Banks", "#1a5bbf", "Buy", 1785, 2050, 1378000, 312000, 61800, 13, 52, 16, 6.5, 48000, 22, 0.6, 2.3, "India's largest private bank with superior liability franchise and best-in-class underwriting."],
+  ["HDFC Bank", "HDFCBANK", "banking", "Private Sector Banks", "#1a5bbf", "Buy", 837, 1040, 1280000, 370055, 74671, 6.9, 52, 14.1, 1.9, 48000, 17, 0.6, 2.3, "India's largest private bank; post-merger NIM trough holding, cleanest asset quality, ~11% PAT CAGR."],
   ["ICICI Bank", "ICICIBANK", "banking", "Private Sector Banks", "#f58220", "Buy", 1240, 1400, 890000, 230000, 48800, 14, 54, 17.2, 7.1, 52000, 18, 0.7, 2.1, "Strong retail franchise, improving asset quality and leadership in digital banking."],
   ["State Bank of India", "SBIN", "banking", "Public Sector Banks", "#2b5fa5", "Accumulate", 860, 950, 770000, 440000, 61000, 11, 48, 17.8, 6.8, 90000, 12.6, 1.4, 3.2, "India's largest bank with deposit franchise moat; efficiency gains drive returns."],
   ["Kotak Mahindra Bank", "KOTAKBANK", "banking", "Private Sector Banks", "#9d0b0b", "Accumulate", 1850, 2000, 367000, 108000, 19800, 12, 55, 14.2, 6.9, 25000, 18.5, 0.5, 1.8, "High-quality private bank trading at premium on superior capital efficiency."],
@@ -86,9 +86,9 @@ const ROWS: Row[] = [
   ["Tech Mahindra", "TECHM", "information-technology", "IT Services", "#7b1fa2", "Reduce", 1780, 1600, 174000, 54500, 3800, 6, 15, 12, 15, 3100, 45.8, 1.8, 0.1, "Margin repair underway but growth lags peers; execution risk remains elevated."],
 
   // ---------- Consumer ----------
-  ["Titan", "TITAN", "consumer", "Luxury Jewellery", "#b8860b", "Buy", 3650, 4350, 324000, 53000, 3900, 19, 13, 24, 28, 2100, 83, 0.4, 0.1, "Luxury jewellery market leader with unmatched brand equity and franchise model."],
+  ["Titan", "TITAN", "consumer", "Luxury Jewellery", "#b8860b", "Accumulate", 4905, 5100, 435000, 76078, 5073, 33, 10.6, 24, 28, 2100, 86, 0.3, 0.1, "Luxury jewellery market leader; FY26 income ex-bullion +33%, PAT +52%, EBIT margin 10.6%."],
   ["Trent", "TRENT", "consumer", "Retail & Fashion", "#e0115f", "Strong Buy", 4376, 5200, 155600, 20074, 1721, 17, 13.5, 24, 36.5, 700, 90, 0.1, 0.2, "Zudio's value-fashion engine compounding store count and same-store growth; 36.5% operating ROCE."],
-  ["Avenue Supermarts", "DMART", "consumer", "Retail", "#e21837", "Accumulate", 4550, 5100, 296000, 54800, 3100, 16, 9, 16, 14, 2600, 95, 0.2, 0.1, "Everyday-low-price grocery retailing with unmatched store-level economics."],
+  ["Avenue Supermarts", "DMART", "consumer", "Retail", "#e21837", "Accumulate", 3852, 4500, 251000, 66968, 3224, 15.9, 7.8, 16, 14, 2600, 78, 0, 0.1, "Everyday-low-price grocery retailing; FY26 EBITDA 7.8%, 503 stores, no dividend ever."],
   ["Jubilant FoodWorks", "JUBLFOOD", "consumer", "Quick Service Restaurants", "#e31837", "Hold", 720, 780, 47500, 7900, 700, 10, 15, 14, 17, 550, 68, 0.1, 0.9, "Dominican Pizza master franchisee; near-term demand softness, long-term rollout intact."],
   ["Varun Beverages", "VBL", "consumer", "Beverages", "#0d47a1", "Buy", 620, 730, 161000, 21300, 2900, 21, 24, 28, 24, 1600, 55, 0.2, 0.6, "PepsiCo franchise bottler riding India's beverage penetration tailwind."],
   ["Nestle India", "NESTLEIND", "consumer", "FMCG", "#b02418", "Accumulate", 2520, 2750, 243000, 20400, 3400, 7, 24, 30, 45, 2200, 71, 1.5, 0.1, "Premium FMCG powerhouse with irreplaceable brands; rural recovery to re-accelerate."],
@@ -190,7 +190,7 @@ const ROWS: Row[] = [
   ["Suzlon Energy", "SUZLON", "energy", "Renewables", "#00a19a", "Accumulate", 88, 100, 120000, 14000, 1400, 35, 18, 21, 17, 900, 86, 0, 0.6, "Wind turbine OEM recovering with strong order book and margin turnaround."],
 
   // ---------- Oil & Gas ----------
-  ["Reliance Industries", "RELIANCE", "oil-gas", "Integrated Energy", "#0055a5", "Buy", 1180, 1360, 1600000, 932000, 67000, 9, 18, 9, 8.5, 58000, 24, 0.3, 0.9, "India's largest conglomerate; O2C recovery and retail growth drive returns."],
+  ["Reliance Industries", "RELIANCE", "oil-gas", "Integrated Energy", "#0055a5", "Strong Buy", 1309, 1700, 1770000, 1175919, 95610, 9.8, 17.7, 24, 28, 58000, 18.5, 0.46, 0.9, "India's largest conglomerate; FY26 revenue ₹11.76 lakh Cr, PAT ₹95,610 Cr, Jio IPO next."],
   ["ONGC", "ONGC", "oil-gas", "Oil Exploration", "#004c8f", "Accumulate", 260, 290, 327000, 152000, 39000, 6, 36, 14, 12, 25000, 8.4, 3.9, 0.3, "India's flagship upstream producer; crude-linked cash flows and high yield."],
   ["Indian Oil Corporation", "IOC", "oil-gas", "Oil Refining", "#e4002b", "Accumulate", 140, 152, 198000, 665000, 30000, 5, 6.5, 15, 12, 18000, 6.6, 4.2, 0.9, "India's largest refiner; refining and fuel-marketing margins normalising."],
   ["BPCL", "BPCL", "oil-gas", "Oil Refining", "#0033a0", "Buy", 300, 340, 130000, 470000, 24000, 7, 7, 18, 15, 12000, 5.4, 3.5, 1.2, "Fuel-marketing major with strong distribution network; margins recovering."],
@@ -206,7 +206,7 @@ const ROWS: Row[] = [
   ["Torrent Power", "TORNTPOWER", "utilities", "Power Generation", "#0071ce", "Accumulate", 1850, 2050, 88900, 24500, 4600, 10, 28, 18, 12, 4200, 19, 1.6, 1.2, "Vertically integrated power utility with strong distribution franchise."],
 
   // ---------- Telecom ----------
-  ["Bharti Airtel", "BHARTIARTL", "telecom", "Telecom Services", "#e4002b", "Strong Buy", 1500, 1800, 890000, 153000, 21000, 15, 53, 20, 13, 22000, 42, 0.3, 2.4, "Premium telecom operator monetising ARPU expansion and enterprise growth."],
+  ["Bharti Airtel", "BHARTIARTL", "telecom", "Telecom Services", "#e4002b", "Buy", 1950, 2330, 1220000, 210973, 26700, 22, 56.7, 22.7, 24.7, 22000, 44, 0.31, 2.4, "Premium telecom operator; ARPU ₹264 and rising, 19 straight profitable quarters, Africa >79% owned."],
   ["Vodafone Idea", "IDEA", "telecom", "Telecom Services", "#e4002b", "Sell", 10, 8, 70000, 43000, -30000, 3, 38, -25, -8, -8000, null, 0, 0, "Balance-sheet stress and tariff-led competition leave limited equity upside."],
   ["Indus Towers", "INDUSTOWER", "telecom", "Tower Infrastructure", "#004c97", "Buy", 380, 440, 102000, 30500, 7400, 9, 58, 24, 13, 7200, 13.8, 1.8, 2.2, "Tower infrastructure leader with high operating leverage and rising yields."],
   ["Tata Communications", "TATACOMM", "telecom", "Telecom Services", "#003d7c", "Accumulate", 1750, 1950, 49900, 24500, 2100, 12, 28, 17, 14, 2500, 24, 1.3, 0.7, "Global digital infrastructure provider pivoting to cloud and IoT."],
@@ -296,7 +296,9 @@ export const companies: Company[] = ROWS.map((row) => {
   const ups = Math.round(((target - price) / price) * 1000) / 10;
   const author = AUTHORS[hashCode(name) % AUTHORS.length];
   const updatedDate =
-    name === "Trent" ? "2026-08-07" : formatDate(hashCode(name) % 5);
+    ["Trent", "Titan", "Avenue Supermarts", "Reliance Industries", "HDFC Bank", "Bharti Airtel"].includes(name)
+      ? "2026-08-07"
+      : formatDate(hashCode(name) % 5);
 
   return {
     slug: slugify(name),

@@ -280,16 +280,20 @@
 
 ---
 
-## ADR-012 — Bespoke per-company research notes (v0.7.0)
+## ADR-012 — Bespoke per-company research notes (v0.7.0 → v0.8.0)
 
-- **Date:** 2026-08-07
+- **Date:** 2026-08-07 (extended 2026-08-07 to a six-note catalogue)
 - **Context:** The 25-section `ReportContent` framework (ADR-005) guarantees
   consistency, but it caps depth where a company deserves an institution-grade
   note. Product brief: completely redesign and rewrite the **Trent** report to
   be indistinguishable from a Morgan Stanley / UBS / Goldman Sachs initiation
   note — not longer, but evidence-backed, driver-linked, consensus-grounded,
   with no horizontal-scroll tables, real fiscal years, downloadable sources,
-  and no byline / evidence-legend / AI wording.
+  and no byline / evidence-legend / AI wording. **v0.8.0** extends the same
+  structure to a further five companies — HDFC Bank, Reliance Industries,
+  Titan, DMart (Avenue Supermarts) and Bharti Airtel — each on verified
+  primary-source data (Q1 FY27 results, FY26 disclosures, broker consensus,
+  live quotes).
 - **Problem:** Delivering a fully bespoke report for exactly one company
   without touching the framework every other company relies on (and without
   breaking the `reportToc` / `ReportToc` contract).
@@ -301,7 +305,9 @@
 - **Decision:** (c). `src/lib/notes/types.ts` defines `ResearchNote` (a KV
   header strip + ordered sections of typed blocks: paragraph, heading,
   callout, KV grid, table, driver matrix, cards, list, quote, risk register,
-  downloads, small print). `src/lib/notes/trent.ts` holds the Trent note;
+  downloads, small print). `src/lib/notes/trent.ts` holds the Trent note,
+  followed by `hdfc-bank.ts`, `reliance.ts`, `titan.ts`, `dmart.ts` and
+  `bharti-airtel.ts` (v0.8.0);
   `src/lib/notes/index.ts` is the registry (`getNote`, `hasNote`, `noteToc`).
   `company/[slug]/page.tsx` branches once: note present → note + its TOC,
   note absent → generic `ReportContent` + `reportToc`. The analyst byline is
@@ -317,7 +323,10 @@
 - **Consequences:** Trent's `Company` row updated to verified primary-source
   figures (price ₹4,376, target ₹5,200, FY26 consolidated financials,
   Q1 FY27 results); note styling added (institutional blue-grey, responsive
-  stacked table cards, print rules) in `globals.css`; docs updated. DB mirror
+  stacked table cards, print rules) in `globals.css`; v0.8.0 extended the
+  verified-primary-source treatment to the five new notes and their
+  `Company` rows (price/target/mcap/EPS/margin/ROE/thesis + `updatedDate`
+  pinned to the note date); docs updated. DB mirror
   must be re-seeded after this change because `companies.ts` is the seed's
   source of truth (ADR-011).
 - **Future review:** If more companies earn bespoke notes, grow the block
