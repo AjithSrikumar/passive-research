@@ -17,6 +17,10 @@
       mirror (23 sectors, 133 companies, 3,325 report sections), seeded via
       `npm run db:seed`, hybrid store (`src/lib/store.ts`), read-only JSON
       API (`/api/health`, `/api/companies`, `/api/companies/[slug]`).
+- [x] **Bespoke Trent research note (v0.7.0, ADR-012)** — full institutional
+      redesign/rewrite of the Trent report on verified primary-source data
+      via the `src/lib/notes/` registry + `ReportNote` renderer (first of the
+      "analyst-authored notes" vision below).
 - [ ] Editorial review pass of report language (M3).
 - [ ] First chart increment: financial history trend + margin bridge (H2
       partial).
@@ -45,7 +49,8 @@
 
 - **Passive as a full research publishing system:** analyst-authored notes
   (initiation / update / flash) with versioned model state, re-using the
-  same 25-section framework.
+  same 25-section framework or the bespoke-note layer (`src/lib/notes/`,
+  ADR-012) when a company needs a deeper treatment.
 - **Consensus + owned estimates UI:** compare our `pricedInAnalysis` with
   in.marketscreener consensus interactively.
 - **Data API + private dashboards:** expand `/api/*` (sector lists, report
@@ -66,4 +71,4 @@
 
 ---
 
-*Last updated: 2026-08-06 (Sprint 3)*
+*Last updated: 2026-08-07 (Sprint 3 — Trent bespoke note v0.7.0)*

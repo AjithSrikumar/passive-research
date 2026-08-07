@@ -17,10 +17,15 @@ forecasting, reverse-DCF valuation, scenarios, and monitorable risks. Since
 v0.6.0 a **Supabase Postgres mirror** + read-only JSON API (`/api/*`) serve
 the same dataset through hybrid loaders (DB-first, static fallback —
 ADR-011); the build and all pages remain fully static and DB-independent.
+Since v0.7.0 selected companies can carry a **bespoke research note**
+(`src/lib/notes/` + `ReportNote`, ADR-012) rendered instead of the generic
+framework when the slug matches — the generic 25-section reports remain
+untouched. Currently bespoke: **Trent** (institutional redesign on verified
+primary-source data).
 
 ## Current Project Status
 
-- **Version:** 0.6.0 (see `docs/CHANGELOG.md`)
+- **Version:** 0.7.0 (see `docs/CHANGELOG.md`)
 - **Build state:** GREEN — `npm run build` passes, 172 static pages + 3
   dynamic API routes; `npm run lint` passes clean. Build works with **no**
   `DATABASE_URL` (pages never read the DB).
@@ -35,7 +40,10 @@ ADR-011); the build and all pages remain fully static and DB-independent.
   for production API reads to hit the DB.
 - **Content state:** The institutional upgrade (executive summary, thesis map,
   reverse-DCF, scenarios, risk/catalyst registers, evidence labels) is complete
-  for all 133 companies. Methodology page rewritten per the manual. Company
+  for all 133 companies. **Trent** (v0.7.0) has a bespoke initiation-note
+  rewrite on verified primary-source data (FY22–FY26 + Q1 FY27 press
+  releases/AR/shareholding/consensus) — see `src/lib/notes/trent.ts`.
+  Methodology page rewritten per the manual. Company
   logos (real brand images from `public/logos/`) replace the initials-only
   squares (v0.4.0).
 - **UI state:** Dark mode is the default (v0.5.3) — `beforeInteractive`
@@ -153,6 +161,10 @@ public/            Static assets
 - **Single source of truth** for the report framework: `reportToc` in
   `src/lib/report.ts`. Methodology page, TOC sidebar, and section rendering
   must all derive from it — never hardcode the 25 sections twice.
+- **Bespoke notes override by slug only** (ADR-012): `getNote(slug)` in
+  `src/lib/notes/` decides which report renders. The generic framework is
+  never changed for a bespoke company; a bespoke note must never touch
+  `reportToc` or `ReportContent`.
 - Data must flow: `companies.ts` / `sectors.ts` → `report.ts` → pages. No
   component may recompute these with divergent constants.
 - **Pages never read the DB.** The Postgres mirror (ADR-011) is served only
@@ -168,7 +180,9 @@ public/            Static assets
 
 1. **The 25-section framework and its ids** (`reportToc` in
    `src/lib/report.ts`). Sections are indexed in `company` pages, the TOC
-   sidebar, the Methodology page, and JSON-LD.
+   sidebar, the Methodology page, and JSON-LD. A bespoke note (ADR-012) may
+   replace the framework for its own slug only — it must never alter
+   `reportToc` or `ReportContent`, and no other company's report may change.
 2. **Rating enumeration** — `Strong Buy | Buy | Accumulate | Hold | Reduce |
    Sell` — used by `RatingBadge`, `sortByRating`, methodology, and data.
 3. **Company/Sector field contract** — `Company`/`Sector` interfaces; many
@@ -192,7 +206,9 @@ public/            Static assets
 
 - Financials are **synthetic** (derived from `Company` fields) and marked
   `(E)` — they are model-implied, and a disclaimer lives on the Methodology
-point. Not a bug; by design.
+  page. **Exception (v0.7.0):** Trent's row and its bespoke note use verified
+  primary-source figures (disclosed FY22–FY26/Q1-FY27 data, consensus from
+  in.marketscreener); estimates in the note remain marked `(E)`.
 - No test runner; manual smoke only up to now (checked in `docs/TESTING.md`).
 - `sectors/[slug]` route does not set `dynamicParams=false` (that's fine —
   unknown slugs → 404 via `getSector` guard).
@@ -213,6 +229,12 @@ See `docs/CHANGELOG.md` v0.1.0–v0.3.0 and `docs/DECISIONS.md`. Highlights:
 - 133-company + 23-sector data model, report engine, 172-page static build.
 - Institutional upgrade: executive summary decision film, thesis map, reverse
   DCF, scenario cards, risk/catalyst registers, evidence labels (ADR-006).
+- **Bespoke Trent research note (v0.7.0, ADR-012)**: full institutional
+  redesign of the Trent report (variant perception, driver matrix, three
+  evidence-linked theses, shareholding pattern, real fiscal years,
+  consensus-anchored valuation, risk register, downloadable sources) on
+  verified primary-source data; responsive stacked table cards, print rules,
+  byline/evidence-legend/AI wording removed for Trent only.
 - Methodology page rewrite per the Institutional Research Manual.
 - Performance/SEO: sitemap, robots, metadataBase, JSON-LD, dark mode.
 - Documentation system (this sprint, v0.3.0).
@@ -320,4 +342,4 @@ change. If any of the above is missed, the task is **not fixed**.
 
 ---
 
-*Last updated: 2026-08-06 (v0.3.1 — auto-commit & auto-deploy policy)*
+*Last updated: 2026-08-07 (v0.7.0 — bespoke Trent note, ADR-012)*

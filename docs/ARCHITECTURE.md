@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-> **Status:** Current, mirrors the code as of 2026-08-07 (v0.6.0).
+> **Status:** Current, mirrors the code as of 2026-08-07 (v0.7.0).
 > This is the most important document in the repository. Update it the moment
 > architecture changes.
 
@@ -20,6 +20,8 @@ flowchart LR
   B[src/lib/sectors.ts<br/>23 sectors] --> C
   C --> D[SSG pages<br/>src/app/**]
   D --> E[Static HTML + JSON-LD<br/>172 pages]
+  N[src/lib/notes/<br/>bespoke notes registry] --> P[ReportNote<br/>block renderer]
+  P -.slug match.-> D
   A2[db/schema.sql<br/>Postgres mirror] --> F[src/lib/db.ts<br/>pg pool]
   F --> G[src/lib/store.ts<br/>hybrid loaders]
   G --> H[/api/health /api/companies<br/>/api/companies/[slug]/]
@@ -74,11 +76,15 @@ src/
     not-found.tsx         # 404
     sitemap.ts            # sitemap.xml
     robots.ts             # robots.txt
-  components/             # 12 reusable components (5 client, 7 server)
+  components/             # 15 reusable components (6 client, 9 server)
   lib/                    # Pure TypeScript logic + data (no React)
     companies.ts          # Company interface, 133 rows, helpers
     sectors.ts            # Sector interface, 23 rows, helpers
     report.ts             # reportToc + report math helpers
+    notes/                # Bespoke research notes (ADR-012)
+      types.ts            # ResearchNote typed block model
+      trent.ts            # Bespoke Trent note content
+      index.ts            # slug -> note registry (getNote/hasNote/noteToc)
 ```
 
 ## 4. Data Flow
@@ -160,7 +166,8 @@ mirror:
 ## 8. Component Architecture
 
 - **Server components (default)** render content: `CompanyCard`, `SectorCard`,
-  `CompanyLogo`, `RatingBadge`, `SectorIcon`, `ReportContent`, `Footer`.
+  `CompanyLogo`, `RatingBadge`, `SectorIcon`, `ReportContent`, `ReportNote`,
+  `Footer`.
 - **Client components** ("use client"): `Nav`, `ThemeToggle`,
   `SearchCompanies`, `ResearchBrowser`, `ReportToc`.
 - Components are **presentational + data-accepting**: they receive `Company`
@@ -179,6 +186,9 @@ mirror:
   `financialHistory`, `forecasts`, `growthCagr`, `upsides`, `ratingLanguage`,
   `readingTime`, `impliedPeOnTarget`, `scenarioCases`, `weightedTarget`,
   `pricedInAnalysis`, `totalReturnPct`, `impliedEps`, `round1`.
+- `notes/` (ADR-012) — typed bespoke-note registry: `types.ts` (block model),
+  `trent.ts` (content), `index.ts` (`getNote`/`hasNote`/`noteToc`). Pure data;
+  rendered by `ReportNote`, never by the generic framework.
 
 Contract notes:
 - All money amounts are **₹ crore**; prices are **₹ per share**.
@@ -208,6 +218,21 @@ Equity Research Manual*, `docs/DECISIONS.md` ADR-006):
   bull/base/bear scenario cards, probability-weighted target check.
 - Source policy: screener.in primary (annual reports, credit ratings, concall
   transcripts/PPT), in.marketscreener.com for consensus.
+
+### 10.1 Bespoke notes (ADR-012)
+
+When a company deserves a treatment the generic framework cannot express, a
+**bespoke note** is added to `src/lib/notes/` and registered by company slug.
+If a note exists for the slug, `company/[slug]/page.tsx` renders `ReportNote`
+(with the note's own TOC) instead of the generic `ReportContent`; the other
+132 companies are untouched. The Trent note (v0.7.0) follows an initiation-note
+structure: it replaces *Corporate Governance* with *Shareholding pattern*,
+uses real fiscal years (FY22–FY26 + Q1 FY27), omits the byline/evidence
+legend/AI wording, sources each claim to downloadable primary documents, and
+renders every table as responsive stacked cards on mobile (no horizontal
+scroll). Bespoke notes intentionally waive ADR-006 evidence labels in favor
+of inline citations, `(E)` marks, and a Sources & downloads section (the full
+decision is in `docs/DECISIONS.md` ADR-012).
 
 ## 11. Error Handling
 
@@ -270,4 +295,5 @@ See `docs/ROADMAP.md`. Short version:
 
 | Date | Change |
 |---|---|
+| 2026-08-07 | Added bespoke notes layer (ADR-012): `src/lib/notes/` registry + `ReportNote` renderer; company page branches note-vs-generic; Trent renders the bespoke note |
 | 2026-08-06 | Created; documents the static data-driven architecture (v0.3.0) |

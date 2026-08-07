@@ -8,6 +8,8 @@ import CompanyLogo from "@/components/CompanyLogo";
 import RatingBadge from "@/components/RatingBadge";
 import ReportToc from "@/components/ReportToc";
 import ReportContent from "@/components/ReportContent";
+import ReportNote from "@/components/ReportNote";
+import { getNote, noteToc } from "@/lib/notes";
 
 export const dynamicParams = false;
 
@@ -54,6 +56,7 @@ export default async function CompanyPage({
   const { slug } = await params;
   const c = getCompany(slug);
   if (!c) notFound();
+  const note = getNote(slug);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -145,22 +148,33 @@ export default async function CompanyPage({
             </div>
           </div>
 
-          <div className="report-byline">
-            <span className="avatar">{c.author.charAt(0)}</span>
-            <div>
-              <b>{c.author}</b>
-              <span>
-                Research Analyst · Passive Research · Last updated{" "}
-                {formatUpdated(c.updatedDate)} · {sectorName(c.sector)}
-              </span>
+          {!note && (
+            <div className="report-byline">
+              <span className="avatar">{c.author.charAt(0)}</span>
+              <div>
+                <b>{c.author}</b>
+                <span>
+                  Research Analyst · Passive Research · Last updated{" "}
+                  {formatUpdated(c.updatedDate)} · {sectorName(c.sector)}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
       <div className="report-layout">
-        <ReportToc items={reportToc} />
-        <ReportContent company={c} />
+        {note ? (
+          <>
+            <ReportToc items={noteToc(note)} />
+            <ReportNote note={note} />
+          </>
+        ) : (
+          <>
+            <ReportToc items={reportToc} />
+            <ReportContent company={c} />
+          </>
+        )}
       </div>
     </main>
   );

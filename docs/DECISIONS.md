@@ -280,6 +280,52 @@
 
 ---
 
+## ADR-012 — Bespoke per-company research notes (v0.7.0)
+
+- **Date:** 2026-08-07
+- **Context:** The 25-section `ReportContent` framework (ADR-005) guarantees
+  consistency, but it caps depth where a company deserves an institution-grade
+  note. Product brief: completely redesign and rewrite the **Trent** report to
+  be indistinguishable from a Morgan Stanley / UBS / Goldman Sachs initiation
+  note — not longer, but evidence-backed, driver-linked, consensus-grounded,
+  with no horizontal-scroll tables, real fiscal years, downloadable sources,
+  and no byline / evidence-legend / AI wording.
+- **Problem:** Delivering a fully bespoke report for exactly one company
+  without touching the framework every other company relies on (and without
+  breaking the `reportToc` / `ReportToc` contract).
+- **Options:** (a) parameterize/override `ReportContent` per company
+  (complex conditional surface, fails the mandated layouts); (b) fork the
+  generic component (drift risk, violates the "single source of truth"
+  convention); (c) a typed, slug-keyed registry of bespoke notes with a small
+  block renderer, falling back to the generic report for all other companies.
+- **Decision:** (c). `src/lib/notes/types.ts` defines `ResearchNote` (a KV
+  header strip + ordered sections of typed blocks: paragraph, heading,
+  callout, KV grid, table, driver matrix, cards, list, quote, risk register,
+  downloads, small print). `src/lib/notes/trent.ts` holds the Trent note;
+  `src/lib/notes/index.ts` is the registry (`getNote`, `hasNote`, `noteToc`).
+  `company/[slug]/page.tsx` branches once: note present → note + its TOC,
+  note absent → generic `ReportContent` + `reportToc`. The analyst byline is
+  omitted for note pages.
+- **Reasoning:** One registry key + one conditional; `ReportContent` and the
+  25-section framework are untouched for the other 132 companies; the block
+  model is server-rendered and safe (no `dangerouslySetInnerHTML`); content is
+  plain-typed data, auditable and printable.
+- **Tradeoffs:** Two content renderers exist (generic + bespoke); a bespoke
+  note intentionally deviates from ADR-006 evidence labels — it instead uses
+  inline citations, `(E)` marks and a `Sources & downloads` section with
+  primary-document links so provenance stays auditable.
+- **Consequences:** Trent's `Company` row updated to verified primary-source
+  figures (price ₹4,376, target ₹5,200, FY26 consolidated financials,
+  Q1 FY27 results); note styling added (institutional blue-grey, responsive
+  stacked table cards, print rules) in `globals.css`; docs updated. DB mirror
+  must be re-seeded after this change because `companies.ts` is the seed's
+  source of truth (ADR-011).
+- **Future review:** If more companies earn bespoke notes, grow the block
+  vocabulary (chart blocks, bridges) via new ADRs rather than re-opening the
+  generic framework.
+
+---
+
 ## Backlog — decision candidates (not yet ADRs)
 
 - **Proposed ADR:** Adopt Vitest for `src/lib` unit tests (task H3).
@@ -291,4 +337,5 @@
 
 *Index of ADRs: 001 platform · 002 data layer · 003 styling · 004 dark mode ·
 005 report framework · 006 methodology · 007 synthetic financials ·
-008 SSG/SEO · 009 docs governance · 010 logo assets · 011 Postgres mirror.*
+008 SSG/SEO · 009 docs governance · 010 logo assets · 011 Postgres mirror ·
+012 bespoke research notes.*

@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.7.0** — bespoke Trent research note (institutional redesign)
 - **0.6.0** — Postgres mirror + read-only JSON API
 - **0.5.3** — dark default + homepage refinement
 - **0.5.2** — homepage polish pass
@@ -15,6 +16,59 @@ Version history:
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.7.0] — 2026-08-07
+
+Redesigned and rewrote the **Trent** report end-to-end as a bespoke
+institution-grade research note (MD/GS/UBS style) via a new bespoke-note
+layer (ADR-012), while leaving the generic 25-section framework and the other
+132 reports untouched.
+
+### Added
+- **`src/lib/notes/`** (`ADR-012`): typed block model (`types.ts`),
+  Trent content (`trent.ts`), slug registry (`index.ts` — `getNote`,
+  `hasNote`, `noteToc`). Note structure: What changed / Variant perception /
+  Three investment drivers / Business inflection point / Catalysts / Three
+  evidence-linked theses / Business overview / Business model / Revenue
+  breakdown / Geographic mix / Segment analysis / Management / Industry /
+  Competitive positioning / Shareholding pattern / Financial analysis /
+  Forecasts / Consensus / Valuation / Risk register / Sources & downloads.
+- **`src/components/ReportNote.tsx`** — server-side block renderer (KV strip,
+  callouts, tables, driver matrix, cards, risk register, downloads) with a
+  `**bold**` inline parser (no MD dep).
+- **`src/app/company/[slug]/page.tsx`** — one branch: note present →
+  `ReportNote` + note TOC; else generic `ReportContent` + `reportToc`. Analyst
+  byline omitted on note pages.
+- **Verified primary-source dataset for Trent** — FY22–FY26 consolidated
+  financials, FY25/FY26/Q1-FY27 store data, shareholding pattern
+  (promoter 37.01%), consensus (in.marketscreener avg target ₹4,832),
+  Marketscreener multiples. Trent's `Company` row updated to these figures
+  (price ₹4,376, target ₹5,200, mcap ₹155,600 Cr, FY26 revenue ₹20,074 Cr,
+  PAT ₹1,721 Cr, EPS 90x, ROCE 36.5%).
+- **Institutional styling** — `.note-*` classes (navy-blue-grey accent tokens
+  + dark overrides), responsive tables that become labelled stacked cards
+  below 760px (no horizontal scroll), probability-labelled risk cards, and
+  `@media print` rules.
+
+### Changed
+- Responsive report tables: generic `.table-wrap/.fin-table` unchanged;
+  bespoke tables are new `.note-table` (stacking on mobile).
+- docs updated: ARCHITECTURE (§3/§8/§9/§10.1), COMPONENTS (`ReportNote`),
+  DECISIONS (ADR-012), TASKS, CHANGELOG, OPENCODE, README.
+
+### Fixed
+- n/a.
+
+### Removed
+- Generic 25-section layout, analyst byline, evidence legend, and
+  AI-sounding wording for the Trent page only (others untouched).
+
+### Security
+- no `dangerouslySetInnerHTML` added; note content is typed data rendered
+  via React components; external source links open in new tabs with
+  `rel="noopener noreferrer"`.
 
 ---
 

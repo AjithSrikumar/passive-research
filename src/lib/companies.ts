@@ -87,7 +87,7 @@ const ROWS: Row[] = [
 
   // ---------- Consumer ----------
   ["Titan", "TITAN", "consumer", "Luxury Jewellery", "#b8860b", "Buy", 3650, 4350, 324000, 53000, 3900, 19, 13, 24, 28, 2100, 83, 0.4, 0.1, "Luxury jewellery market leader with unmatched brand equity and franchise model."],
-  ["Trent", "TRENT", "consumer", "Retail & Fashion", "#e0115f", "Strong Buy", 6800, 8100, 242000, 14200, 1600, 35, 14, 30, 26, 900, 151, 0.1, 0.2, "Zudio's value-fashion juggernaut compounding store count and same-store growth."],
+  ["Trent", "TRENT", "consumer", "Retail & Fashion", "#e0115f", "Strong Buy", 4376, 5200, 155600, 20074, 1721, 17, 13.5, 24, 36.5, 700, 90, 0.1, 0.2, "Zudio's value-fashion engine compounding store count and same-store growth; 36.5% operating ROCE."],
   ["Avenue Supermarts", "DMART", "consumer", "Retail", "#e21837", "Accumulate", 4550, 5100, 296000, 54800, 3100, 16, 9, 16, 14, 2600, 95, 0.2, 0.1, "Everyday-low-price grocery retailing with unmatched store-level economics."],
   ["Jubilant FoodWorks", "JUBLFOOD", "consumer", "Quick Service Restaurants", "#e31837", "Hold", 720, 780, 47500, 7900, 700, 10, 15, 14, 17, 550, 68, 0.1, 0.9, "Dominican Pizza master franchisee; near-term demand softness, long-term rollout intact."],
   ["Varun Beverages", "VBL", "consumer", "Beverages", "#0d47a1", "Buy", 620, 730, 161000, 21300, 2900, 21, 24, 28, 24, 1600, 55, 0.2, 0.6, "PepsiCo franchise bottler riding India's beverage penetration tailwind."],
@@ -295,7 +295,8 @@ export const companies: Company[] = ROWS.map((row) => {
 
   const ups = Math.round(((target - price) / price) * 1000) / 10;
   const author = AUTHORS[hashCode(name) % AUTHORS.length];
-  const updatedDate = formatDate(hashCode(name) % 5);
+  const updatedDate =
+    name === "Trent" ? "2026-08-07" : formatDate(hashCode(name) % 5);
 
   return {
     slug: slugify(name),

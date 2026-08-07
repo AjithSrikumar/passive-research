@@ -5,7 +5,10 @@ companies across 23 sectors**. Every company gets a structured, 25-section
 research report built to a standard an institutional portfolio manager can act
 on: decision-first executive summary, driver-based forecasts, DCF + peer
 valuation with explicit "what is priced in" analysis, bull/base/bear scenarios,
-a monitorable risk register, and dated catalysts.
+a monitorable risk register, and dated catalysts. Companies that warrant a
+deeper treatment get a **fully bespoke initiation-style note** instead of the
+generic framework — the Trent report (v0.7.0) is the first, built on verified
+primary-source data (ADR-012).
 
 > **Repository is the source of truth.** Architecture, decisions, tasks, and
 > conventions live in the Markdown docs. Start with
@@ -16,6 +19,11 @@ a monitorable risk register, and dated catalysts.
 
 - **133 full company reports** — SSG pages, each with a fixed 25-section
   institutional framework.
+- **Bespoke research notes** (ADR-012) — a typed note layer
+  (`src/lib/notes/` + `ReportNote`) that replaces the generic framework for
+  registered slugs; currently **Trent**, rewritten as an initiation-style note
+  on verified primary-source data (real fiscal years, shareholding pattern,
+  consensus-anchored valuation, downloadable sources, responsive tables).
 - **23 sector pages** with coverage counts, descriptions, and icon sets.
 - **Ratings** — Strong Buy / Buy / Accumulate / Hold / Reduce / Sell, each with
   an expected 12-month total-return band.
@@ -34,7 +42,6 @@ a monitorable risk register, and dated catalysts.
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Framework | **Next.js 16.3.0** (App Router, Turbopack) | Breaking-change discipline: see the generated `AGENTS.md` block; Next 16 docs ship in `node_modules/next/dist/docs/` |
 | Framework | **Next.js 16.3.0** (App Router, Turbopack) | Breaking-change discipline: see the generated `AGENTS.md` block; Next 16 docs ship in `node_modules/next/dist/docs/` |
 | UI | **React 19.2.8** | Server components by default; 6 client components |
 | Language | **TypeScript 5** | strict project config |
@@ -103,16 +110,17 @@ src/
     latest-research/   # Recently updated reports
     coverage-universe/ # Full company list
     sectors/           # Sector index + [slug] sector page
-    company/[slug]/    # 133 SSG report pages (JSON-LD + ReportToc + ReportContent)
+    company/[slug]/    # 133 SSG report pages (JSON-LD + ReportToc; bespoke note or generic ReportContent)
     api/               # Read-only JSON API: health, companies, companies/[slug]
     not-found.tsx      # 404
     sitemap.ts         # sitemap.xml (metadataBase-driven)
     robots.ts          # robots.txt
-  components/          # 14 reusable components (6 client, 8 server)
+  components/          # 15 reusable components (6 client, 9 server)
   lib/
     companies.ts       # 133-company dataset + helpers (build-time source of truth)
     sectors.ts         # 23-sector dataset + helpers
     report.ts          # 25-section framework + report math helpers
+    notes/             # Bespoke research notes: types.ts, trent.ts, index.ts (ADR-012)
     db.ts              # server-only Postgres pool + query helpers (ADR-011)
     store.ts           # hybrid loaders: DB-first, static fallback
 db/
@@ -151,7 +159,7 @@ Repositories are the memory of the project. Every session starts by reading:
 | [`docs/ROADMAP.md`](./docs/ROADMAP.md) | Sprints and vision |
 | [`docs/DATABASE.md`](./docs/DATABASE.md) | The data layer: Company/Sector schemas + the Postgres mirror (schema, seed, hybrid store) |
 | [`docs/API.md`](./docs/API.md) | Route table, JSON-LD, sitemap/robots, and the live `/api/*` JSON API |
-| [`docs/COMPONENTS.md`](./docs/COMPONENTS.md) | All 12 components: props, usage, best practices |
+| [`docs/COMPONENTS.md`](./docs/COMPONENTS.md) | All 15 components: props, usage, best practices |
 | [`docs/STYLING.md`](./docs/STYLING.md) | Design system, tokens, typography, dark mode, responsive, a11y |
 | [`docs/TESTING.md`](./docs/TESTING.md) | Verification strategy and the manual smoke-test checklist |
 | [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) | Hosting, environments, release checklist |
@@ -171,7 +179,10 @@ It implements the conventions in the *Institutional Equity Research Manual*
 - **Synthetic financials.** Historical reconstructions and forward estimates
   (`src/lib/report.ts`) are model-implied from each company's headline fields
   and labelled `(E)` / `[E]`. They are *not* pulled from a live data feed.
-  Real-data enrichment is the top roadmap item (`docs/ROADMAP.md`).
+  **Exception (v0.7.0):** the Trent row and its bespoke note use verified
+  primary-source figures (disclosed FY22–FY26/Q1-FY27 data; consensus from
+  in.marketscreener). Real-data enrichment for the rest is the top roadmap
+  item (`docs/ROADMAP.md`).
 - **Static content root.** Pages are generated from `src/lib` TS modules; the
   Postgres mirror is a re-seeded snapshot (not a CMS). No persistence, no
   authentication, no write endpoints.

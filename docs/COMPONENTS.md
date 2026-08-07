@@ -1,6 +1,6 @@
 # COMPONENTS.md — UI Component Catalog
 
-> 14 components in `src/components/`. 6 are client (`"use client"`); 8 are
+> 15 components in `src/components/`. 6 are client (`"use client"`); 9 are
 > server components. All are presentational and data-accepting — none fetch
 > data. Update this file whenever a component or its props change.
 
@@ -19,7 +19,8 @@
 | `SectorIcon` | server | 23 inline SVG sector icons |
 | `ResearchBrowser` | client | Filterable/sortable research list |
 | `ReportToc` | client | Sidebar scrollspy TOC |
-| `ReportContent` | server | 25-section report body |
+| `ReportContent` | server | 25-section report body (generic framework) |
+| `ReportNote` | server | Bespoke research-note renderer (ADR-012) |
 | `HeroPreview` | server | Home hero report-card illustration (desktop only) |
 | `LatestList` | server | Home "Recently Updated" grouped timeline list |
 
@@ -120,6 +121,21 @@
 - **Note (render responsibility):** uses many `src/lib/report.ts` helpers —
   keep them as the single computation source; do not inline divergent math.
 
+### `ReportNote`
+- **Props:** `{ note: ResearchNote }`.
+- **Purpose:** Renders a bespoke research note (ADR-012): an institution
+  header KV strip followed by sections of typed blocks — `p`, `h3`,
+  `callout` (info/key/warn), `kv`, `table`/`drivers` (responsive — tables
+  become stacked labelled cards below 760px, no horizontal scroll), `cards`,
+  `list`, `quote`, `risks` (probability-labelled cards), `downloads`
+  (primary-source links), `small`. Sections carry `id` +
+  `data-report-section` so `ReportToc` scrollspy works with note TOC items
+  from `noteToc()`.
+- **Wiring:** `src/app/company/[slug]/page.tsx` renders the note when
+  `getNote(slug)` matches; the generic `ReportContent` path is untouched.
+  The analyst byline is omitted on note pages.
+- **Content model:** `src/lib/notes/types.ts`; registry `src/lib/notes/index.ts`.
+
 ### `Footer`
 - **Props:** none.
 
@@ -140,3 +156,8 @@
   `formatUpdated` (never inline manual formatting).
 - **Known dependency graph:** `ReportContent` → `RatingBadge`, `Link`,
   `src/lib/report.ts`, `src/lib/companies.ts`, `src/lib/sectors.ts`.
+- **Bespoke note convention (ADR-012):** `ReportNote` treats `**…**` in note
+  text as bold (simple split — no MD parser, no `dangerouslySetInnerHTML`).
+  New companies that need a bespoke treatment become a `src/lib/notes/*.ts`
+  content module registered in `src/lib/notes/index.ts`; the generic
+  framework is never modified for them.
