@@ -42,8 +42,11 @@ pages (132/133 site slugs resolved via Coverage_Map + verified MANUAL_RIC;
 SKF India not in the NSE-900 universe). A second snapshot
 (`src/lib/factor/backtest.ts`: 14 years, 280 constituents) feeds the new
 **`/backtest` page**: yearly portfolio/benchmark/excess returns, IC,
-universe size, and per-year Top-20 constituents. Nav + sitemap updated; lint
-clean, build green (176 pages).
+universe size, and per-year Top-20 constituents. Company pages now carry a
+**factor scorecard** (`FactorScorecard`): the covered company's composite +
+G/Q/V/M block scores and rank for every FY12–FY26, plus realized Top-20
+returns (hidden for companies outside the NSE-900 universe, e.g. SKF India).
+Nav + sitemap updated; lint clean, build green (176 pages).
 
 ## [0.9.0] — 2026-08-07
 

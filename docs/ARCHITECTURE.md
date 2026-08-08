@@ -122,6 +122,8 @@ flowchart TB
   - `ReportToc` (IntersectionObserver scrollspy over `[data-report-section]`)
   - `FactorScreener` (year/search/composite/block filters, sort, CSV export
     over the static factor snapshot)
+  - `FactorScorecard` (server) — per-company factor history from
+    `src/lib/factor/company.ts` on every `/company/[slug]` page
 
 ### Factor model layer (v0.10.0)
 

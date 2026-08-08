@@ -9,6 +9,7 @@ import RatingBadge from "@/components/RatingBadge";
 import ReportToc from "@/components/ReportToc";
 import ReportContent from "@/components/ReportContent";
 import ReportNote from "@/components/ReportNote";
+import FactorScorecard from "@/components/FactorScorecard";
 import { getNote, noteToc } from "@/lib/notes";
 
 export const dynamicParams = false;
@@ -176,6 +177,8 @@ export default async function CompanyPage({
           </>
         )}
       </div>
+
+      <FactorScorecard slug={slug} />
     </main>
   );
 }
