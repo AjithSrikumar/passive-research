@@ -19,13 +19,20 @@
 ## 1.1 Unit Tests (Vitest)
 
 ```bash
-npm test    # vitest run — tests/**, 9 tests (factor snapshot + lookup)
+npm test    # vitest run — tests/**, 18 tests (factor snapshot + lookup + engine)
 ```
 
 - `vitest.config.mts` — `@` alias → `src/`, node environment, `tests/**`.
-- Coverage: `src/lib/factor/` snapshot integrity (years, contiguous ranks,
-  score bounds, backtest alignment) and `getCompanyFactorHistory` (slug
-  resolution, out-of-universe null, Top-20 return exposure).
+- Coverage:
+  - `src/lib/factor/` snapshot integrity (years, contiguous ranks, score
+    bounds, backtest alignment — FY13..FY25, 13 years / 260 constituents)
+    and `getCompanyFactorHistory` (slug resolution, out-of-universe null,
+    Top-N return exposure);
+  - `src/lib/factor/engine.ts` (backtest engine): percentile ties, Top-N
+    selection with custom block + metric weights, momentum recomputed from
+    prices, MinN gating + RIC tiebreak, IC null-below-N-30, percentile-cache
+    equivalence (cached run ≡ fresh run), `meanPortfolioReturn`, and default
+    params sanity (catalog coverage, UI ranges).
 - Regenerate the snapshot (`npm run factor:snapshot`) whenever the import
   changes — tests assert against the committed static data.
 
@@ -53,7 +60,12 @@ fails here. Keep it green after every change.
 - [ ] `/methodology`, `/about`, `/contact`, `/legal`, `/terms`, `/privacy` 200
 - [ ] `/screener` 200 — table renders, year selector works, CSV export
       downloads a file
-- [ ] `/backtest` 200 — yearly summary table + 14 constituent tables render
+- [ ] `/backtest` 200 — controls render (4 weight sliders, metric chips,
+      MinN/Top-N, Run/Reset), yearly summary table (FY13–FY25, 13 rows),
+      year dropdown switches the portfolio table, Run produces a live run
+      when the DB is configured
+- [ ] `/api/factor/backtest` POST — 200 with results; 400 on invalid
+      params (`minN: "abc"`); 503 when the DB is unreachable
 - [ ] `/company/<slug>` factor scorecard present for covered names
       (e.g. `reliance-industries`), absent for non-universe names
       (e.g. `skf-india`)

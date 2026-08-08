@@ -10,7 +10,8 @@
     "test": "vitest run",
     "db:seed": "tsx scripts/db/seed.ts",
     "factor:import": "tsx scripts/factor-model/import.ts",
-    "factor:snapshot": "tsx scripts/factor-model/snapshot.ts"
+    "factor:snapshot": "tsx scripts/factor-model/snapshot.ts",
+    "factor:optimize": "tsx scripts/factor-model/optimize.ts"
   },
   "dependencies": {
     "next": "16.3.0",

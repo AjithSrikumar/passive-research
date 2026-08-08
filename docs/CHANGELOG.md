@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.10.1** — parametric backtest + optimizer (dynamic weights, year dropdown)
 - **0.10.0** — factor model pipeline, schema, screener + backtest pages
 - **0.9.0** — bespoke notes ×27 (top market caps; 33 total)
 - **0.8.0** — bespoke notes ×5 (HDFC Bank, Reliance, Titan, DMart, Airtel)
@@ -21,6 +22,50 @@ Version history:
 - **0.1.0** — Next.js conversion + full site build (baseline)
 
 ---
+
+## [0.10.1] — 2026-08-08
+
+**Added** the **parametric backtest** (dynamic weights + optimizer):
+
+- **Shared backtest engine** — `src/lib/factor/engine.ts` (pure, no I/O):
+  `runFactorBacktest` takes factor weights (G/Q/V/M), per-metric weights
+  (0 = excluded, renormalized within block), MinN and Top-N as parameters;
+  `buildPercentileCache` precomputes per-metric percentiles per MinN so
+  thousands of parameter runs reuse one cache. One implementation feeds
+  import/seeding, the live API and the page — numbers always agree.
+- **Default-parameter optimizer** — `npm run factor:optimize`
+  (`scripts/factor-model/optimize.ts`): grid search over block weights
+  (0..1, step 0.25), per-block metric inclusion (defaults/single/leave-one-
+  out), MinN (50–150) and Top-N (10–30) maximizing the mean portfolio
+  return over FY13–FY25, staged with the percentile cache (~10k candidate
+  runs in under a minute). Writes `src/lib/factor/params.ts`
+  (`DEFAULT_BACKTEST_PARAMS`, `FACTOR_METRICS`, `OPTIMIZER_SUMMARY`).
+  **Result:** Valuation 1.0 / P/E only / MinN 50 / Top-20 → mean portfolio
+  **25.47%** vs benchmark **12.07%** (excess +13.40%). (In-sample
+  caveat documented in `docs/FACTOR_MODEL.md` §6.2.)
+- **`POST /api/factor/backtest`** — dynamic server route: validates caller
+  parameters (block weights 0–10, metric weights 0–10, minN 20–500, topN
+  1–100; unspecified metric weights merge over model defaults), runs the
+  engine on the DB mirror, returns yearly results + constituents + mean
+  stats; 400 on invalid input, 503 without a configured DB.
+- **`/backtest` page rework** — `FactorBacktestRunner` client component:
+  sliders for the four factor weights, per-metric on/off chips grouped by
+  factor, MinN/Top-N selects, Run/Reset buttons, summary cards, yearly
+  table (FY13–FY25) and a **year dropdown** (FY2025…FY2013) to view each
+  portfolio — no long scrolling. Renders the static snapshot instantly and
+  upgrades to live runs when the DB is available.
+- **Changed:** backtest signal years are now **FY13–FY25** — FY2012
+  returns and portfolio removed by design (it predates the Nifty500
+  membership universe). `backtest_years`/`backtest_constituents` are
+  derived tables, DELETEd and rebuilt on every import (no stale rows);
+  snapshot now 13 years × 20 = 260 constituents. `scripts/factor-model/
+  backtest.ts` (fixed-weights) removed in favor of the engine.
+- **Tests:** `tests/factor/engine.test.ts` (percentile ties, Top-N
+  selection, momentum from prices, MinN gating + RIC tiebreak, IC
+  N≥30 threshold, cache equivalence, default-params sanity) — 18 tests
+  green. `docs/TESTING.md`, `docs/FACTOR_MODEL.md` (§6.1/§6.2),
+  `docs/DATA_MODEL.md`, `docs/ARCHITECTURE.md`, `docs/TASKS.md` updated.
+  Lint clean, tests green, build green.
 
 ## [0.10.0] — 2026-08-08
 

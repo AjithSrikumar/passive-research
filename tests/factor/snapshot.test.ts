@@ -42,9 +42,11 @@ describe("factor snapshot integrity", () => {
     }
   });
 
-  it("backtest snapshot aligns with composites", () => {
+  it("backtest snapshot aligns with composites (FY12 excluded)", () => {
     const years = BACKTEST_YEARS.map((y) => y[0]);
-    expect(years).toEqual([12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]);
+    expect(years).toEqual([13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]);
+    expect(BACKTEST_YEARS).toHaveLength(13);
+    expect(BACKTEST_CONSTITUENTS).toHaveLength(260);
     for (const y of BACKTEST_YEARS) {
       expect(y[6]).toBe(20); // 20 constituents per year
       const cons = BACKTEST_CONSTITUENTS.filter((c) => c[0] === y[0]);
@@ -86,7 +88,7 @@ describe("getCompanyFactorHistory", () => {
   });
 
   it("exposes realized Top-20 return only when selected", () => {
-    const h = getCompanyFactorHistory("angel-one")!;
+    const h = getCompanyFactorHistory("bpcl")!;
     const selected = h.filter((y) => y.returnPct !== null);
     expect(selected.length).toBeGreaterThan(0);
     for (const y of selected) expect(y.returnPct).not.toBeNull();

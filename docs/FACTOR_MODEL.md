@@ -121,9 +121,75 @@ convention** and recomputes everything:
   same year; **excess** = portfolio − benchmark; **IC** = Spearman rank
   correlation of composite vs. realized 1-year return across eligible
   companies (N ≥ 30 required, else NULL).
-- Years tested: **FY13–FY25** (FY26 is live — no exit price yet).
-- Results land in `backtest_years` + `backtest_constituents` (per-year top-20
-  with prices/returns); the workbook's quintile tables are not imported.
+- Years tested: **FY13–FY25** (FY26 is live — no exit price yet; FY12 is
+  **excluded** from the backtest by design — it predates the Nifty500
+  membership universe — so signal years are FY13..FY25, 13 years).
+- Results land in `backtest_years` + `backtest_constituents` (per-year
+  top-N with prices/returns); the workbook's quintile tables are not
+  imported. The backtest tables are **derived tables, fully rebuilt on
+  every import** (DELETE + reinsert) and seeded by the shared engine (see
+  §6.1) using `DEFAULT_BACKTEST_PARAMS` from `src/lib/factor/params.ts`.
+
+## 6.1 Interactive backtest (user-adjustable parameters)
+
+Since v0.10.1 the backtest is **parametric**: the factor weights, the
+metrics inside each factor, MinN and Top-N are runtime inputs, not
+hardcoded. The math lives in one shared, pure module —
+`src/lib/factor/engine.ts` (`runFactorBacktest`) — used by all three
+consumers, so numbers always agree:
+
+- **Import/seeding** — `scripts/factor-model/import.ts` runs the engine
+  with the optimized defaults to populate `backtest_years` /
+  `backtest_constituents`; the build-time snapshot
+  (`src/lib/factor/backtest.ts`) is regenerated from those tables.
+- **Live API** — `POST /api/factor/backtest` (dynamic server route) reads
+  the DB mirror, validates caller parameters (block weights 0..10,
+  metric weights 0..10 where 0 = excluded, minN 20..500, topN 1..100) and
+  returns yearly results + constituents for the custom run. Unspecified
+  metric weights merge over the model defaults (`weight_in_block`).
+- **UI** — `/backtest` renders the static snapshot instantly and offers
+  sliders for the four factor weights, per-metric on/off chips grouped by
+  factor, MinN/Top-N selects and a Run button; a year dropdown shows the
+  selected year's Top-N portfolio (no long scrolling). If the API is
+  unavailable (no `DATABASE_URL` on the host), the page keeps showing the
+  static snapshot with a note.
+
+Conventions are identical to §6 (signal/entry at FY-end close, exit at
+FY+1 close, equal-weight Top-N, benchmark = equal-weight eligible
+universe, Spearman IC N ≥ 30, momentum recomputed from prices).
+
+## 6.2 Default-parameter optimization (optimizer)
+
+`npm run factor:optimize` (`scripts/factor-model/optimize.ts`) runs a
+grid search over the workbook data (no DB needed) maximizing the **mean
+Top-N portfolio return** over FY13..FY25, staged for speed with a
+precomputed percentile cache:
+
+1. block weights (0..1 in 0.25 steps, momentum = remainder, plus the
+   model default 0.3/0.3/0.3/0.1) with model metric defaults;
+2. per-block metric inclusion (defaults / single-metric / leave-one-out);
+3. MinN × Top-N (50..150 × 10..30) with the best weights;
+4. block weights re-searched with the best metric set.
+
+The winner is written to `src/lib/factor/params.ts`:
+`DEFAULT_BACKTEST_PARAMS` (used by import + UI defaults) and
+`FACTOR_METRICS` (metric catalog for the UI controls), plus
+`OPTIMIZER_SUMMARY` metadata. The engine's percentile cache is
+parameterized by MinN, so reusing it across runs makes each candidate
+~2 ms (thousands of candidates per stage).
+
+**Current optimized defaults (FY13..FY25):** factor weights Growth 0 /
+Quality 0 / Valuation **1.0** / Momentum 0; metric selection inside the
+Valuation factor: **P/E only**; MinN 50; Top-N 20 → mean portfolio
+**25.47%** vs benchmark **12.07%** (excess +13.40%).
+
+> ⚠️ **In-sample caveat:** these defaults are selected on the same
+> FY13..FY25 window they are then reported on; they are a data-mining
+> baseline, not a forward-looking edge. The model-spec weights
+> (0.3/0.3/0.3/0.1, all metrics, MinN 100) remain the documented
+> "model default" for the screener's composites; the optimizer's output
+> is the *backtest page's* starting point, and the UI invites users to
+> vary everything from there.
 
 ## 7. Data-quality rules
 

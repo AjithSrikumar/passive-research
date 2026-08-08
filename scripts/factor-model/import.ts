@@ -3,11 +3,15 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 
-import { FISCAL_YEARS, METRICS, MIN_N, type Block } from "./config";
+import { FISCAL_YEARS, METRICS, type Block } from "./config";
 import { loadWorkbook, loadCompanies, loadMetricSheet, loadMembership, cellValue } from "./workbook";
 import { blockScore, compositeScore, type BlockScoreResult, type MetricRow, type ScoreContext } from "./score";
-import { runBacktest } from "./backtest";
 import { buildRicSlugMap } from "./map-names";
+import {
+  runFactorBacktest,
+  type FactorData,
+} from "../../src/lib/factor/engine";
+import { DEFAULT_BACKTEST_PARAMS } from "../../src/lib/factor/params";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
@@ -163,22 +167,6 @@ async function run() {
     ranked.forEach((r, i) => compositeRows.push({ ric: r.ric, fy, composite: r.composite, rank: i + 1 }));
   }
 
-  // ---- backtest (Top-20, no look-ahead) ----
-  const backtests = [];
-  for (let i = 0; i < FISCAL_YEARS.length - 1; i++) {
-    const fy = FISCAL_YEARS[i];
-    const scores = new Map<string, number>();
-    const returns = new Map<string, number>();
-    for (const c of compositeRows.filter((r) => r.fy === fy)) {
-      const exitClose = priceMap.get(c.ric)?.get(FISCAL_YEARS[i + 1] as number);
-      const entryClose = priceMap.get(c.ric)?.get(fy as number);
-      if (exitClose === undefined || entryClose === undefined || entryClose === 0) continue;
-      scores.set(c.ric, c.composite);
-      returns.set(c.ric, exitClose / entryClose - 1);
-    }
-    if (scores.size >= MIN_N) backtests.push(runBacktest({ fiscalYear: fy, scores, returns }));
-  }
-
   // ---- RIC -> site slug mapping (via workbook Coverage_Map sheet) ----
   const coverage = wb.getWorksheet("Coverage_Map")!;
   const coverageNames: { name: string; ric: string }[] = [];
@@ -201,6 +189,28 @@ async function run() {
   if (unmatchedSite.length) console.log("  mapped to RIC not in universe:", unmatchedSite.join("; "));
   const unmatchedWb = companies.filter((c) => !slugByRic.get(c.ric) && !c.removedPeriod).slice(0, 10).map((c) => `${c.ric} (${c.name})`);
   if (unmatchedWb.length) console.log("  active, unmatched:", unmatchedWb.join("; "));
+
+  // ---- backtest (engine, optimized defaults, signal years FY13..FY25) ----
+  const closes = new Map<string, number>();
+  for (const [ric, years] of priceMap) {
+    for (const [fy, close] of years) closes.set(`${ric}|${fy}`, close);
+  }
+  const names = new Map<string, { name: string; slug: string | null }>();
+  for (const c of companies) names.set(c.ric, { name: c.name, slug: slugByRic.get(c.ric) ?? null });
+  const engineData: FactorData = {
+    years: [...FISCAL_YEARS].slice(1, -1), // FY13..FY25 (FY12 excluded; FY26 has no exit close)
+    metrics: METRICS.map((m) => ({
+      key: m.key,
+      block: m.block,
+      higherIsBetter: m.higherIsBetter,
+      weightInBlock: m.weightInBlock,
+    })),
+    values: valueMap,
+    membership: membershipByKey,
+    closes,
+    names,
+  };
+  const backtests = runFactorBacktest(engineData, DEFAULT_BACKTEST_PARAMS);
 
   // ---- writes ----
   await upsertMany(
@@ -279,6 +289,11 @@ async function run() {
     ["ric", "fiscal_year"]
   );
 
+  // ---- backtest writes: derived tables, fully rebuilt each import ----
+  if (!DRY_RUN) {
+    await pool!.query("DELETE FROM backtest_constituents");
+    await pool!.query("DELETE FROM backtest_years");
+  }
   await upsertMany(
     "backtest_years",
     ["fiscal_year", "n_eligible", "portfolio_return", "benchmark_return", "excess_return", "ic"],
@@ -290,7 +305,7 @@ async function run() {
     "backtest_constituents",
     ["fiscal_year", "rank", "ric", "entry_close", "exit_close", "return_pct"],
     backtests.flatMap((b) =>
-      b.selected.map((s) => {
+      b.constituents.map((s) => {
         const entry = priceMap.get(s.ric)?.get(b.fiscalYear);
         const exit = priceMap.get(s.ric)?.get(b.fiscalYear + 1);
         return [b.fiscalYear, s.rank, s.ric, entry ?? 0, exit ?? 0, s.returnPct];
@@ -300,12 +315,20 @@ async function run() {
   );
 
   // ---- report ----
-  console.log("\n=== Backtest (Top-20, no look-ahead) ===");
+  console.log(`\n=== Backtest (engine, default params, Top-${DEFAULT_BACKTEST_PARAMS.topN}, no look-ahead) ===`);
+  console.log(
+    `params: G ${DEFAULT_BACKTEST_PARAMS.blockWeights.growth} Q ${DEFAULT_BACKTEST_PARAMS.blockWeights.quality} ` +
+    `V ${DEFAULT_BACKTEST_PARAMS.blockWeights.valuation} M ${DEFAULT_BACKTEST_PARAMS.blockWeights.momentum} | ` +
+    `minN ${DEFAULT_BACKTEST_PARAMS.minN} topN ${DEFAULT_BACKTEST_PARAMS.topN} (see src/lib/factor/params.ts)`
+  );
   for (const b of backtests) {
     console.log(
       `FY${b.fiscalYear}: n=${b.nEligible} portfolio=${(b.portfolioReturn * 100).toFixed(1)}% benchmark=${(b.benchmarkReturn * 100).toFixed(1)}% excess=${(b.excessReturn * 100).toFixed(1)}% IC=${b.ic?.toFixed(3)}`
     );
   }
+  const meanPort = backtests.reduce((s, b) => s + b.portfolioReturn, 0) / backtests.length;
+  const meanBench = backtests.reduce((s, b) => s + b.benchmarkReturn, 0) / backtests.length;
+  console.log(`mean portfolio ${(meanPort * 100).toFixed(2)}% | mean benchmark ${(meanBench * 100).toFixed(2)}%`);
 
   const rel = compositeRows.filter((r) => r.ric === "RELI.NS");
   console.log("\nRELI composites:", rel.map((r) => `FY${r.fy}=${r.composite.toFixed(4)}`).join(" "));
