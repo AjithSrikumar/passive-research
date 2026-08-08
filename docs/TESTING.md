@@ -1,8 +1,9 @@
 # TESTING.md — Verification Strategy
 
-> Current state: **no automated test runner** (task H3). Verification =
-> static checks (`lint` + `build`) + a documented manual smoke pass. This
-> file is the checklist; run it after every change.
+> Current state: **Vitest adopted for `src/lib` unit tests** (partial H3,
+> 2026-08-08 — factor-model layer covered; report math remains a target).
+> Verification = unit tests + static checks (`lint` + `build`) + a documented
+> manual smoke pass. This file is the checklist; run it after every change.
 
 ## 1. Strategy Overview
 
@@ -10,10 +11,23 @@
 |---|---|---|
 | Static analysis | ESLint 9 (`npm run lint`) | + `tsc --noEmit` (build already type-checks) |
 | Type safety | `next build` type-check | same |
-| Unit (lib math) | none | Vitest for `src/lib/*` (report math, formatters, guards) |
+| Unit (lib math) | Vitest for `src/lib/factor/*` (`npm test`) | + report math, formatters, guards |
 | Component tests | none | optional (server components are pure data → JSX) |
 | E2E | manual smoke | scripted smoke (PowerShell/Playwright) |
 | Visual | manual browser pass | screenshot review optional |
+
+## 1.1 Unit Tests (Vitest)
+
+```bash
+npm test    # vitest run — tests/**, 9 tests (factor snapshot + lookup)
+```
+
+- `vitest.config.mts` — `@` alias → `src/`, node environment, `tests/**`.
+- Coverage: `src/lib/factor/` snapshot integrity (years, contiguous ranks,
+  score bounds, backtest alignment) and `getCompanyFactorHistory` (slug
+  resolution, out-of-universe null, Top-20 return exposure).
+- Regenerate the snapshot (`npm run factor:snapshot`) whenever the import
+  changes — tests assert against the committed static data.
 
 ## 2. Static Checks
 
@@ -37,6 +51,12 @@ fails here. Keep it green after every change.
       names, high-PE names (e.g., `hdfc-bank`, `trent`, `wipro`,
       `bata-india`, `polycab-india`, `ltimindtree`)
 - [ ] `/methodology`, `/about`, `/contact`, `/legal`, `/terms`, `/privacy` 200
+- [ ] `/screener` 200 — table renders, year selector works, CSV export
+      downloads a file
+- [ ] `/backtest` 200 — yearly summary table + 14 constituent tables render
+- [ ] `/company/<slug>` factor scorecard present for covered names
+      (e.g. `reliance-industries`), absent for non-universe names
+      (e.g. `skf-india`)
 - [ ] `/company/does-not-exist` → 404 (custom page)
 - [ ] `/sitemap.xml` and `/robots.txt` 200 and contain expected URLs
 
@@ -74,7 +94,8 @@ fails here. Keep it green after every change.
 ## 5. Manual Testing Checklist (pre-release)
 
 - [ ] `npm run lint` clean
-- [ ] `npm run build` clean (172 static pages)
+- [ ] `npm test` green
+- [ ] `npm run build` clean (176 static pages)
 - [ ] Section 3 pass on dev server
 - [ ] `docs/` updated for the change (see `OPENCODE.md` § Shutdown)
 - [ ] No secrets or absolute local paths in committed files
@@ -82,6 +103,8 @@ fails here. Keep it green after every change.
 
 ## 6. Known Gaps
 
-- No automated unit/E2E (H3, high priority).
-- Visual regression untested across browser matrix — desktop Chrome +
-  mobile viewport is the manual baseline.
+- Unit coverage limited to the factor layer — report math, formatters and
+  guards (`src/lib/report.ts`, `companies.ts`) still untested (H3).
+- No component/E2E automation — desktop Chrome + mobile viewport is the
+  manual baseline.
+- Visual regression untested across browser matrix.

@@ -46,7 +46,9 @@ universe size, and per-year Top-20 constituents. Company pages now carry a
 **factor scorecard** (`FactorScorecard`): the covered company's composite +
 G/Q/V/M block scores and rank for every FY12–FY26, plus realized Top-20
 returns (hidden for companies outside the NSE-900 universe, e.g. SKF India).
-Nav + sitemap updated; lint clean, build green (176 pages).
+**Vitest adopted** (`npm test`, `vitest.config.mts`, `tests/factor/`): 9
+snapshot-integrity + lookup tests for the factor layer (partial H3). Nav +
+sitemap updated; lint clean, tests green, build green (176 pages).
 
 ## [0.9.0] — 2026-08-07
 

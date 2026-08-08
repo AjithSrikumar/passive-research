@@ -29,6 +29,14 @@ primary-source data (ADR-012).
   an expected 12-month total-return band.
 - **Search & browse** — live client-side search, filter/sort research browser,
   sector and coverage-universe indexes.
+- **Factor model platform** (v0.10.0) — a four-factor model (growth 30%,
+  quality 30%, valuation 30%, momentum 10%) over the NSE-900 universe,
+  FY12–FY26, imported from `Factor-Dashboard-v4_Unbiased.xlsx` via
+  `npm run factor:import` (spec: `docs/FACTOR_MODEL.md`). Public surfaces: a
+  **`/screener`** (rank every company, filters, sort, CSV export), a
+  **`/backtest`** (Top-20 portfolio track record per FY), and per-company
+  **factor scorecards** on every report page. Data flows workbook → Postgres
+  mirror → build-time static snapshot (`src/lib/factor/`) → SSG pages.
 - **Institutional methodology** — a documented evidence-classification system
   (Fact / Management / Consensus / Estimate / Inference / Scenario /
   Uncertainty), a 60/40 DCF–peer-multiple valuation framework, reverse-DCF
