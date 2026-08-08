@@ -71,16 +71,16 @@ const AUTHORS = [
 const ROWS: Row[] = [
   // ---------- Banking ----------
   ["HDFC Bank", "HDFCBANK", "banking", "Private Sector Banks", "#1a5bbf", "Buy", 837, 1040, 1280000, 370055, 74671, 6.9, 52, 14.1, 1.9, 48000, 17, 0.6, 2.3, "India's largest private bank; post-merger NIM trough holding, cleanest asset quality, ~11% PAT CAGR."],
-  ["ICICI Bank", "ICICIBANK", "banking", "Private Sector Banks", "#f58220", "Buy", 1240, 1400, 890000, 230000, 48800, 14, 54, 17.2, 7.1, 52000, 18, 0.7, 2.1, "Strong retail franchise, improving asset quality and leadership in digital banking."],
-  ["State Bank of India", "SBIN", "banking", "Public Sector Banks", "#2b5fa5", "Accumulate", 860, 950, 770000, 440000, 61000, 11, 48, 17.8, 6.8, 90000, 12.6, 1.4, 3.2, "India's largest bank with deposit franchise moat; efficiency gains drive returns."],
-  ["Kotak Mahindra Bank", "KOTAKBANK", "banking", "Private Sector Banks", "#9d0b0b", "Accumulate", 1850, 2000, 367000, 108000, 19800, 12, 55, 14.2, 6.9, 25000, 18.5, 0.5, 1.8, "High-quality private bank trading at premium on superior capital efficiency."],
-  ["Axis Bank", "AXISBANK", "banking", "Private Sector Banks", "#8b1e41", "Buy", 1160, 1300, 358000, 139000, 27400, 15, 50, 14.6, 6.5, 32000, 13.1, 0.9, 2.4, "Turnaround complete; merger synergies and retail momentum support re-rating."],
+["ICICI Bank", "ICICIBANK", "banking", "Private Sector Banks", "#f58220", "Buy", 1420, 1680, 998000, 230000, 50747, 14, 54, 17.2, 7.1, 52000, 19.7, 0.7, 2.1, "Best-in-class NIM, fee growth and asset quality; FT26 standalone PAT ₹50,747 Cr."],
+  ["State Bank of India", "SBIN", "banking", "Public Sector Banks", "#2b5fa5", "Buy", 1098, 1230, 998000, 440000, 80032, 12.9, 48, 17.8, 6.8, 90000, 12.5, 1.1, 3.2, "India's largest bank; ~9x FY27E earnings, ~1.5x book, GNPA 1.2% at cyclicals low."],
+  ["Kotak Mahindra Bank", "KOTAKBANK", "banking", "Private Sector Banks", "#9d0b0b", "Accumulate", 385, 460, 390000, 108000, 17500, 17, 55, 14.2, 6.9, 25000, 22, 0.4, 1.8, "Sector-best 4.5% NIM with clean book; growth resumption is the re-rating trigger."],
+  ["Axis Bank", "AXISBANK", "banking", "Private Sector Banks", "#8b1e41", "Accumulate", 1102, 1350, 340000, 139000, 27400, 15, 50, 14.6, 6.5, 32000, 12.4, 0.7, 2.4, "Citi merger synergies + retail momentum; P/B ~1.4x supports re-rating."],
   ["IndusInd Bank", "INDUSINDBK", "banking", "Private Sector Banks", "#003b7a", "Hold", 980, 1010, 76300, 67000, 8900, 10, 48, 11.9, 6.2, 14000, 8.6, 1.2, 2.8, "Asset quality watch continues; vehicle finance recovery is key catalyst."],
 
   // ---------- Information Technology ----------
-  ["Tata Consultancy Services", "TCS", "information-technology", "IT Services", "#1a4f9c", "Buy", 4120, 4600, 1490000, 260000, 49000, 7, 28, 53, 62, 41000, 30.4, 3.1, 0.05, "Cash-generative IT bellwether with industry-leading margins and dividend record."],
-  ["Infosys", "INFY", "information-technology", "IT Services", "#0071c5", "Accumulate", 1905, 2080, 790000, 159000, 31200, 8, 25, 33, 41, 28000, 25.3, 2.4, 0.04, "Large-cap IT with strong AI pipeline; margin expansion expected on utilization."],
-  ["HCL Technologies", "HCLTECH", "information-technology", "IT Services", "#2b5fa5", "Accumulate", 1690, 1840, 458000, 113000, 19600, 8, 21, 28, 34, 16000, 23.4, 3.5, 0.1, "Diversified services portfolio with software-led growth and attractive yield."],
+  ["Tata Consultancy Services", "TCS", "information-technology", "IT Services", "#1a4f9c", "Buy", 2455, 2650, 887000, 267021, 49855, 4.6, 28, 53, 62, 41000, 17.2, 4.5, 0.05, "AI-first IT bellwether; FY26 revenue ₹2.67 lakh Cr, OM 24%, record dividend ₹111."],
+  ["Infosys", "INFY", "information-technology", "IT Services", "#0071c5", "Buy", 1175, 1320, 486000, 171000, 31200, 4.6, 21.1, 33, 41, 28000, 15.2, 4.3, 0.04, "Large-cap IT with AI/cloud pipeline; 21% margin floor and 4.3% dividend."],
+  ["HCL Technologies", "HCLTECH", "information-technology", "IT Services", "#2b5fa5", "Accumulate", 1356.6, 1500, 368500, 130634, 18361, 11.2, 21.4, 28, 34, 16000, 20, 4.4, 0.1, "Software and engineering R&D IT major; FY26 revenue ₹1.31 lakh Cr, margin 21.4%."],
   ["Wipro", "WIPRO", "information-technology", "IT Services", "#4a9b2f", "Hold", 305, 315, 159000, 89000, 11600, 5, 18, 15, 18, 9800, 13.7, 0.2, 0.2, "Turnaround play; order bookings improvement yet to translate into revenue growth."],
   ["LTIMindtree", "LTIMIND", "information-technology", "IT Services", "#7a3e9d", "Buy", 5700, 6300, 169000, 37500, 5900, 9, 20, 24, 28, 4900, 28.6, 2.0, 0.1, "Engineering-led digital transformation pure play with consistent delivery quality."],
   ["Tech Mahindra", "TECHM", "information-technology", "IT Services", "#7b1fa2", "Reduce", 1780, 1600, 174000, 54500, 3800, 6, 15, 12, 15, 3100, 45.8, 1.8, 0.1, "Margin repair underway but growth lags peers; execution risk remains elevated."],
@@ -91,11 +91,11 @@ const ROWS: Row[] = [
   ["Avenue Supermarts", "DMART", "consumer", "Retail", "#e21837", "Accumulate", 3852, 4500, 251000, 66968, 3224, 15.9, 7.8, 16, 14, 2600, 78, 0, 0.1, "Everyday-low-price grocery retailing; FY26 EBITDA 7.8%, 503 stores, no dividend ever."],
   ["Jubilant FoodWorks", "JUBLFOOD", "consumer", "Quick Service Restaurants", "#e31837", "Hold", 720, 780, 47500, 7900, 700, 10, 15, 14, 17, 550, 68, 0.1, 0.9, "Dominican Pizza master franchisee; near-term demand softness, long-term rollout intact."],
   ["Varun Beverages", "VBL", "consumer", "Beverages", "#0d47a1", "Buy", 620, 730, 161000, 21300, 2900, 21, 24, 28, 24, 1600, 55, 0.2, 0.6, "PepsiCo franchise bottler riding India's beverage penetration tailwind."],
-  ["Nestle India", "NESTLEIND", "consumer", "FMCG", "#b02418", "Accumulate", 2520, 2750, 243000, 20400, 3400, 7, 24, 30, 45, 2200, 71, 1.5, 0.1, "Premium FMCG powerhouse with irreplaceable brands; rural recovery to re-accelerate."],
-  ["Britannia Industries", "BRITANNIA", "consumer", "FMCG", "#1a2f6e", "Hold", 5650, 6000, 136000, 17900, 2350, 6, 16, 34, 40, 1700, 58, 1.6, 0.1, "Biscuit market leader defending share; competitive intensity caps margin gains."],
-  ["Hindustan Unilever", "HINDUNILVR", "consumer", "FMCG", "#3b3b3b", "Accumulate", 2450, 2650, 576000, 61000, 10100, 5, 23, 20, 27, 8400, 57, 1.9, 0.02, "Consumer staples behemoth; premiumisation and distribution reset drive recovery."],
+  ["Nestle India", "NESTLEIND", "consumer", "FMCG", "#b02418", "Accumulate", 1535, 1592, 289000, 23113, 3499, 14.7, 22, 30, 45, 2200, 75.9, 0.9, 0.1, "Premium FMCG powerhouse with irreplaceable brands; Q1 FY27 profit +48%."],
+  ["Britannia Industries", "BRITANNIA", "consumer", "FMCG", "#1a2f6e", "Hold", 5650, 6000, 136000, 17900, 2350, 6, 17, 30, 40, 1700, 58, 1.6, 0.1, "Biscuit market leader defending share; competitive intensity caps margin gains."],
+  ["Hindustan Unilever", "HINDUNILVR", "consumer", "FMCG", "#3b3b3b", "Accumulate", 2078, 2260, 488000, 61331, 10876, 5, 23, 20, 26, 8400, 46, 1.7, 0.02, "Staples bellwether; Q1 FY27 volumes +6% with margin +80 bps — modest de-rating valid."],
   ["Marico", "MARICO", "consumer", "FMCG", "#00529b", "Buy", 690, 780, 89000, 10800, 1550, 9, 19, 31, 42, 1250, 57, 1.9, 0.05, "Coconut oil and foods portfolio compounding with strong digital-first play."],
-  ["ITC", "ITC", "consumer", "Diversified FMCG", "#6b1d1d", "Buy", 490, 560, 612000, 82000, 21500, 8, 36, 29, 34, 17000, 28.5, 3.2, 0.05, "Defensive conglomerate monetizing agri-synergies with rising capital returns."],
+  ["ITC", "ITC", "consumer", "Diversified FMCG", "#6b1d1d", "Accumulate", 289, 320, 362000, 81640, 20286, 10, 29, 30, 34, 17000, 17.8, 3.0, 0.05, "Cigarette cash machine + FMCG/hotels; ~18x TTM with strong payout floor."],
 
   // ---------- Consumer Durables ----------
   ["Dixon Technologies", "DIXON", "consumer-durables", "Consumer Electronics", "#1e88e5", "Strong Buy", 14800, 17500, 88500, 24500, 1000, 35, 6, 19, 21, 300, 88, 0.1, 0.5, "India's electronics EMS champion riding the China+1 manufacturing wave."],
@@ -118,7 +118,7 @@ const ROWS: Row[] = [
   ["Narayana Hrudayalaya", "NH", "healthcare", "Hospitals", "#e4002b", "Buy", 1850, 2100, 37800, 5600, 680, 14, 19, 15, 15, 400, 56, 0.1, 0.3, "Value healthcare pioneer delivering affordable tertiary care at scale."],
 
   // ---------- Pharmaceuticals ----------
-  ["Sun Pharmaceutical", "SUNPHARMA", "pharmaceuticals", "Pharmaceuticals", "#f8b800", "Buy", 1710, 1950, 410000, 50500, 10300, 10, 25, 17, 16, 7500, 40, 1.2, 0.1, "India's largest pharma company; specialty portfolio drives margin inflection."],
+  ["Sun Pharmaceutical", "SUNPHARMA", "pharmaceuticals", "Pharmaceuticals", "#f8b800", "Buy", 1946, 2167, 468000, 58600, 11479, 11.9, 32, 17, 16, 7500, 40.8, 0.8, 0.1, "India's largest pharma; specialty portfolio drives margin expansion to ~32%."],
   ["Dr. Reddy's Laboratories", "DRREDDY", "pharmaceuticals", "Pharmaceuticals", "#c41230", "Accumulate", 1290, 1400, 215000, 29300, 5700, 8, 26, 21, 22, 4800, 38, 1.1, 0.1, "Quality-conscious pharma major; US generics pricing remains the swing factor."],
   ["Cipla", "CIPLA", "pharmaceuticals", "Pharmaceuticals", "#0057a7", "Buy", 1520, 1750, 123000, 27100, 3800, 11, 23, 17, 19, 3600, 32, 1.0, 0.1, "Respiratory and inhaled-therapy leader with strong India franchise."],
   ["Divi's Laboratories", "DIVISLAB", "pharmaceuticals", "Pharmaceuticals", "#1f4e79", "Accumulate", 6100, 6700, 162000, 8500, 2200, 9, 35, 20, 22, 1900, 74, 1.5, 0.02, "High-quality API/CDMO pure play with oligopolistic niche positions."],
@@ -126,9 +126,9 @@ const ROWS: Row[] = [
   ["Torrent Pharmaceuticals", "TORNTPHARM", "pharmaceuticals", "Pharmaceuticals", "#7a2e2e", "Accumulate", 3450, 3750, 117000, 12500, 2100, 10, 28, 18, 17, 1600, 56, 1.4, 0.1, "Domestic-focused chronic therapy leader with resilient cash flows."],
 
   // ---------- Capital Goods ----------
-  ["Siemens India", "SIEMENS", "capital-goods", "Electrical Equipment", "#009999", "Strong Buy", 7200, 8500, 256000, 23500, 2300, 18, 14, 22, 24, 1800, 111, 1.0, 0.05, "Electrification and industrial automation leader riding the capex super-cycle."],
+  ["Siemens India", "SIEMENS", "capital-goods", "Electrical Equipment", "#009999", "Accumulate", 3938, 4300, 141000, 16787, 1587, 11, 10, 22, 24, 4000, 56, 0.4, 0.05, "Electrification super-cycle; order backlog ₹45k Cr; 18-month FY26 base."],
   ["ABB India", "ABB", "capital-goods", "Electrical Equipment", "#e4002b", "Buy", 7900, 9000, 167000, 12900, 1700, 20, 18, 25, 28, 1400, 98, 0.8, 0.05, "High-margin electrification franchise with strong data-centre and grid orders."],
-  ["Bharat Electronics", "BEL", "capital-goods", "Defence Electronics", "#0070b8", "Buy", 320, 375, 234000, 23100, 4600, 22, 22, 24, 27, 3400, 51, 1.2, 0.02, "Defence electronics champion with multi-year order book visibility."],
+  ["Bharat Electronics", "BEL", "capital-goods", "Defence Electronics", "#0070b8", "Buy", 390, 465, 285000, 27480, 6048, 16.2, 25.8, 24, 27, 3400, 47.1, 0.7, 0.6, "Defence electronics; order book ₹72,258 Cr, Q1 revenue +25%."],
   ["Thermax", "THERMAX", "capital-goods", "Energy & Environment", "#e31837", "Accumulate", 4800, 5350, 57200, 9700, 730, 14, 10, 14, 16, 550, 78, 1.2, 0.1, "Energy transition beneficiary; order inflows strong, margins recovering."],
   ["Cummins India", "CUMMINSIND", "capital-goods", "Engines", "#1f3460", "Buy", 3900, 4400, 108000, 9900, 1550, 12, 19, 22, 25, 1300, 70, 1.8, 0.05, "Power-generation engine leader; data-centre demand creates structural tailwind."],
 
@@ -148,18 +148,18 @@ const ROWS: Row[] = [
   ["Vinati Organics", "VINATIORGA", "chemicals", "Speciality Chemicals", "#0f4d92", "Accumulate", 1950, 2200, 20100, 1900, 480, 10, 34, 22, 24, 350, 42, 0.7, 0.05, "Global leader in niche specialty molecules with pricing power and high margins."],
 
   // ---------- Automobiles ----------
-  ["Maruti Suzuki", "MARUTI", "automobiles", "Passenger Vehicles", "#2c3e50", "Buy", 13200, 14800, 415000, 157000, 14500, 9, 13, 17, 18, 9000, 29, 1.1, 0.02, "Passenger vehicle leader with unrivalled scale, network and cost efficiency."],
-  ["Tata Motors", "TATAMOTORS", "automobiles", "Passenger & CV", "#4863a8", "Buy", 1050, 1220, 386000, 435000, 32000, 12, 17, 33, 24, 19000, 12, 0.7, 0.9, "JLR turnaround plus domestic EV leadership creates multi-year earnings story."],
-  ["Mahindra & Mahindra", "M&M", "automobiles", "SUV & Tractors", "#f58220", "Buy", 3050, 3450, 379000, 141000, 14700, 16, 17, 20, 18, 8500, 26, 0.8, 0.4, "SUV market share gains and farm equipment cycle drive visible compounding."],
-  ["Bajaj Auto", "BAJAJ-AUTO", "automobiles", "Two-Wheelers", "#d70000", "Accumulate", 9600, 10500, 268000, 51000, 8900, 13, 20, 30, 32, 6800, 30, 2.2, 0.02, "Two-wheeler and three-wheeler export champion with industry-best margins."],
+  ["Maruti Suzuki", "MARUTI", "automobiles", "Passenger Vehicles", "#2c3e50", "Accumulate", 13984, 16000, 440000, 174369, 14500, 20.2, 8.2, 17, 18, 9000, 29, 1.1, 0.02, "PV volume leader; Q1 FY27 margin compressed to 8.2%, recovery expected H2 FY27."],
+  ["Tata Motors", "TATAMOTORS", "automobiles", "Passenger & CV", "#4863a8", "Buy", 345.9, 420, 127000, 339000, 12715, 8, 11, 33, 24, 19000, 9.1, 0.9, 1.2, "Post-demerger TMPV: JLR+PV compounding; TMPV trades ~₹345.9."],
+  ["Mahindra & Mahindra", "M&M", "automobiles", "SUV & Tractors", "#f58220", "Buy", 3468.3, 4100, 432000, 172000, 18200, 20, 13, 20, 18, 8500, 23.7, 0.5, 0.4, "SUV share gains + farm margins; Q1 FY27 PAT +34% YoY."],
+  ["Bajaj Auto", "BAJAJ-AUTO", "automobiles", "Two-Wheelers", "#d70000", "Accumulate", 11856, 12500, 331000, 56000, 10990, 37, 20, 30, 32, 6800, 30, 1.9, 0.02, "Export champion with ~20% margins; Q1 FY27 revenue +37% YoY."],
   ["Eicher Motors", "EICHERMOT", "automobiles", "Two-Wheelers", "#0074b7", "Buy", 5100, 5700, 140000, 18500, 3000, 11, 22, 21, 23, 2300, 47, 1.1, 0.02, "Royal Enfield franchise delivers consistent returns with global expansion runway."],
   ["Hero MotoCorp", "HEROMOTOCO", "automobiles", "Two-Wheelers", "#0071b9", "Hold", 5200, 5450, 104000, 38500, 4150, 7, 14, 22, 24, 3200, 25, 2.8, 0.02, "Volume leader facing premiumisation headwinds; EV strategy a key monitorable."],
   ["TVS Motor", "TVSMOTOR", "automobiles", "Two-Wheelers", "#0b6db3", "Buy", 2500, 2850, 119000, 33500, 2600, 12, 12, 28, 25, 2200, 46, 1.0, 0.5, "Multi-product two-wheeler platform expanding in India and emerging markets."],
   ["Ashok Leyland", "ASHOKLEY", "automobiles", "Commercial Vehicles", "#003da5", "Accumulate", 300, 330, 88000, 43000, 3800, 9, 12, 25, 20, 2800, 23, 1.5, 0.7, "CV cycle recovery and LCV foray support earnings; demand cyclicality persists."],
 
   // ---------- Financial Services ----------
-  ["Bajaj Finance", "BAJFINANCE", "financial-services", "NBFC", "#7a1f5f", "Strong Buy", 9700, 11300, 603000, 88000, 17400, 27, 62, 19.5, 9.5, 30000, 35, 0.3, 5.2, "India's best-managed consumer financier compounding book at 25%+ for a decade."],
-  ["Bajaj Finserv", "BAJAJFINSV", "financial-services", "Diversified Financials", "#7a1f5f", "Buy", 1790, 2050, 285000, 34000, 4500, 20, 55, 13, 8.5, 9000, 63, 0.2, 4.5, "Financial conglomerate with insurance and financing businesses scaling together."],
+  ["Bajaj Finance", "BAJFINANCE", "financial-services", "NBFC", "#7a1f5f", "Buy", 1060, 1175, 658000, 88000, 19332, 24, 62, 19.5, 9.5, 30000, 34, 0.3, 5.2, "Best-managed consumer financier; AUM +24% to ₹5.47 lakh Cr, Q1 PAT +28%."],
+  ["Bajaj Finserv", "BAJAJFINSV", "financial-services", "Diversified Financials", "#7a1f5f", "Buy", 2004, 2362, 333000, 150000, 9801, 18, 19, 13, 8.5, 9000, 34, 0.4, 4.5, "Financial conglomerate — BFinance + insurance; Q1 income +18%."],
   ["HDFC Asset Management", "HDFCAMC", "financial-services", "Asset Management", "#004c8f", "Buy", 4600, 5200, 98300, 3400, 1600, 24, 62, 31, 51, 1450, 61, 1.3, 0.02, "Leading fund house leveraging equity-market penetration and SIP flows."],
   ["SBI Cards", "SBICARD", "financial-services", "Payments", "#2b5fa5", "Accumulate", 720, 800, 68300, 18700, 2800, 12, 38, 17, 8, 9000, 24, 0.7, 4.0, "Credit card franchise with high-spend affluent base; asset quality normalising."],
   ["Cholamandalam Investment", "CHOLAFIN", "financial-services", "NBFC", "#003da5", "Buy", 1650, 1900, 155000, 35500, 5100, 22, 56, 19, 9, 15000, 30, 0.5, 4.8, "Vehicle and SME financier with best-in-class growth and risk management."],
@@ -191,7 +191,7 @@ const ROWS: Row[] = [
 
   // ---------- Oil & Gas ----------
   ["Reliance Industries", "RELIANCE", "oil-gas", "Integrated Energy", "#0055a5", "Strong Buy", 1309, 1700, 1770000, 1175919, 95610, 9.8, 17.7, 24, 28, 58000, 18.5, 0.46, 0.9, "India's largest conglomerate; FY26 revenue ₹11.76 lakh Cr, PAT ₹95,610 Cr, Jio IPO next."],
-  ["ONGC", "ONGC", "oil-gas", "Oil Exploration", "#004c8f", "Accumulate", 260, 290, 327000, 152000, 39000, 6, 36, 14, 12, 25000, 8.4, 3.9, 0.3, "India's flagship upstream producer; crude-linked cash flows and high yield."],
+  ["ONGC", "ONGC", "oil-gas", "Oil Exploration", "#004c8f", "Buy", 237.3, 295, 299000, 152000, 39000, 6, 36, 14, 12, 25000, 7.7, 5.6, 0.3, "Crude-realisations upcycle; ~6.9x earnings, ~5.6% yield."],
   ["Indian Oil Corporation", "IOC", "oil-gas", "Oil Refining", "#e4002b", "Accumulate", 140, 152, 198000, 665000, 30000, 5, 6.5, 15, 12, 18000, 6.6, 4.2, 0.9, "India's largest refiner; refining and fuel-marketing margins normalising."],
   ["BPCL", "BPCL", "oil-gas", "Oil Refining", "#0033a0", "Buy", 300, 340, 130000, 470000, 24000, 7, 7, 18, 15, 12000, 5.4, 3.5, 1.2, "Fuel-marketing major with strong distribution network; margins recovering."],
   ["GAIL", "GAIL", "oil-gas", "Gas Distribution", "#003d7c", "Buy", 200, 235, 131000, 133000, 11500, 10, 12, 12, 10, 9000, 11.4, 2.4, 0.7, "Gas transmission monopoly plays the structural gas-penetration story."],
@@ -200,9 +200,9 @@ const ROWS: Row[] = [
   ["Indraprastha Gas", "IGL", "oil-gas", "City Gas", "#00529b", "Hold", 320, 335, 44800, 16300, 2300, 8, 18, 18, 14, 2100, 19.5, 3.4, 0.6, "Delhi-NCR gas distributor; CNG penetration growth but price sensitive."],
 
   // ---------- Utilities ----------
-  ["NTPC", "NTPC", "utilities", "Power Generation", "#003366", "Accumulate", 360, 400, 349000, 178000, 20500, 10, 28, 12, 8.5, 12000, 17, 2.6, 1.6, "India's largest power generator transitioning to green capacity."],
-  ["Power Grid Corporation", "POWERGRID", "utilities", "Transmission", "#003da5", "Buy", 325, 370, 302000, 48000, 16700, 9, 47, 19.5, 10, 9500, 18, 3.4, 2.5, "Transmission monopoly with regulated returns and record capex cycle."],
-  ["Adani Power", "ADANIPOWER", "utilities", "Power Generation", "#0a3d62", "Buy", 570, 670, 220000, 54000, 17000, 12, 38, 24, 13, 8000, 13, 0.4, 2.0, "Large thermal IPP monetising merchant power upcycle and PPA expansion."],
+  ["NTPC", "NTPC", "utilities", "Power Generation", "#003366", "Accumulate", 344.3, 400, 334000, 178000, 20500, 11.9, 22, 12, 8.5, 12000, 16.3, 1.7, 1.6, "Largest thermal generator; EBITDA +20.5% Q1, 30+ GW green pipeline."],
+  ["Power Grid Corporation", "POWERGRID", "utilities", "Transmission", "#003da5", "Buy", 271.6, 325, 255000, 48843, 16300, 9, 26, 19.5, 10, 9500, 15.6, 3.9, 2.5, "Transmission monopoly; ₹37k Cr/yr capex, regulated ROE, ~4% yield."],
+  ["Adani Power", "ADANIPOWER", "utilities", "Power Generation", "#0a3d62", "Accumulate", 209, 252, 81000, 54241, 12775, 8, 44, 24, 13, 8000, 28.1, 0.3, 2.0, "Thermal IPP; Q1 PAT +47%; 4.89 GW under construction."],
   ["Torrent Power", "TORNTPOWER", "utilities", "Power Generation", "#0071ce", "Accumulate", 1850, 2050, 88900, 24500, 4600, 10, 28, 18, 12, 4200, 19, 1.6, 1.2, "Vertically integrated power utility with strong distribution franchise."],
 
   // ---------- Telecom ----------
@@ -221,7 +221,7 @@ const ROWS: Row[] = [
 
   // ---------- Metals ----------
   ["Tata Steel", "TATASTEEL", "metals", "Steel", "#00529b", "Accumulate", 128, 145, 160000, 225000, 10000, 6, 15, 9, 11, 8000, 16, 1.8, 0.9, "Global steel major; India expansion and Europe restructuring drive cycle."],
-  ["JSW Steel", "JSWSTEEL", "metals", "Steel", "#0072ce", "Accumulate", 900, 1000, 220000, 178000, 9000, 8, 15, 10, 9, 5500, 24, 0.7, 1.3, "India's largest private steelmaker scaling capacity toward 50mt vision."],
+  ["JSW Steel", "JSWSTEEL", "metals", "Steel", "#0072ce", "Accumulate", 1298, 1378, 318000, 170000, 16200, 17, 20, 10, 9, 5500, 12.9, 0.5, 1.3, "India's largest private steelmaker; Q1 EBITDA margin ~20%, deleveraging."],
   ["Hindalco Industries", "HINDALCO", "metals", "Aluminium", "#0b3d91", "Buy", 675, 780, 150000, 220000, 11500, 8, 13, 13, 11, 7000, 13, 0.7, 0.8, "Aluminium leader with world-class Novelis downstream franchise."],
   ["Vedanta", "VEDL", "metals", "Diversified Metals", "#e4002b", "Buy", 490, 580, 182000, 143000, 15000, 6, 25, 22, 17, 9500, 12, 4.5, 1.5, "Diversified natural-resources conglomerate with high dividend yields."],
   ["Jindal Steel & Power", "JINDALSTEL", "metals", "Steel", "#003366", "Accumulate", 880, 980, 90000, 50500, 4500, 7, 18, 12, 10, 3200, 20, 1.0, 0.9, "North India steelmaker with low-cost iron ore linkage and capacity expansion."],
@@ -229,7 +229,7 @@ const ROWS: Row[] = [
   ["APL Apollo Tubes", "APLAPOLLO", "metals", "Steel Tubes", "#e11d48", "Strong Buy", 1850, 2150, 25700, 31000, 750, 14, 7, 19, 22, 700, 34, 0.3, 0.4, "Organised steel-pipe leader consolidating a fragmented, growing market."],
 
   // ---------- Mining ----------
-  ["Coal India", "COALINDIA", "mining", "Coal Mining", "#003366", "Buy", 470, 540, 290000, 145000, 34000, 6, 28, 30, 33, 28000, 8.5, 6.4, 0.02, "World's largest coal producer with unmatched dividend yield and cash flows."],
+  ["Coal India", "COALINDIA", "mining", "Coal Mining", "#003366", "Accumulate", 413.65, 460, 255000, 168000, 31070, 7.8, 19, 30, 33, 28000, 8.2, 6.4, 0.02, "World's largest coal producer; Q1 PAT ₹8,850 Cr, yield ~6.4%."],
   ["NMDC", "NMDC", "mining", "Iron Ore Mining", "#006a4e", "Accumulate", 200, 225, 61300, 20500, 5600, 7, 34, 17, 19, 4200, 11, 5.4, 0.02, "India's largest iron-ore miner; volumes and prices support earnings."],
   ["Hindustan Zinc", "HINDZINC", "mining", "Zinc Mining", "#003d7c", "Accumulate", 470, 520, 199000, 33000, 9500, 8, 42, 26, 28, 8000, 21, 4.0, 0.05, "World-class integrated zinc producer with superior cost curves."],
 
@@ -241,8 +241,8 @@ const ROWS: Row[] = [
   ["Welspun India", "WELSPUNIND", "textiles", "Home Textiles", "#004b93", "Accumulate", 560, 620, 16400, 10300, 900, 12, 16, 17, 18, 700, 18, 0.5, 0.8, "Home-textile exporter with US retail relationships and brand diversification."],
 
   // ---------- Infrastructure ----------
-  ["Larsen & Toubro", "LT", "infrastructure", "EPC & Engineering", "#003f87", "Buy", 3500, 4050, 492000, 229000, 12500, 15, 12, 17, 12, 6500, 39, 1.2, 0.5, "India's engineering and construction bellwether riding the capex super-cycle."],
-  ["Adani Ports", "ADANIPORTS", "infrastructure", "Ports", "#e30613", "Strong Buy", 1380, 1650, 298000, 29000, 8000, 18, 52, 15, 11, 5800, 37, 0.6, 1.3, "India's largest private port operator with 40%+ cargo-market share."],
+  ["Larsen & Toubro", "LT", "infrastructure", "EPC & Engineering", "#003f87", "Accumulate", 4040, 4497, 557000, 292000, 16084, 12.2, 12, 17, 12, 6500, 34.6, 0.9, 0.5, "Record ₹5.3 lakh Cr order book; FY27 guide +15% inflows and revenue."],
+  ["Adani Ports", "ADANIPORTS", "infrastructure", "Ports", "#e30613", "Buy", 1690, 1950, 364000, 38000, 13000, 15, 60, 15, 11, 5800, 28, 0.5, 1.3, "India's largest private port-logistics network; Q1 cargo +15%."],
   ["GMR Airports", "GMRAIRPORT", "infrastructure", "Airports", "#003399", "Accumulate", 90, 102, 54300, 10500, 1000, 21, 38, 8, 6.5, -800, 54, 0, 2.8, "Delhi and Hyderabad airport operator monetising air-traffic recovery."],
   ["IRB Infrastructure", "IRB", "infrastructure", "Roads", "#00529b", "Accumulate", 55, 62, 33200, 8900, 950, 13, 39, 15, 10, 1800, 35, 0.4, 2.0, "Largest private road developer; toll traffic growth and HAM resolution."],
   ["KEC International", "KEC", "infrastructure", "EPC", "#004b93", "Buy", 950, 1100, 24400, 21500, 700, 16, 9, 13, 12, 600, 35, 0.4, 1.1, "Transmission EPC leader with strong domestic and international order book."],
@@ -296,7 +296,14 @@ export const companies: Company[] = ROWS.map((row) => {
   const ups = Math.round(((target - price) / price) * 1000) / 10;
   const author = AUTHORS[hashCode(name) % AUTHORS.length];
   const updatedDate =
-    ["Trent", "Titan", "Avenue Supermarts", "Reliance Industries", "HDFC Bank", "Bharti Airtel"].includes(name)
+    [
+      "Trent", "Titan", "Avenue Supermarts", "Reliance Industries", "HDFC Bank", "Bharti Airtel",
+      "Tata Consultancy Services", "Infosys", "State Bank of India", "ICICI Bank", "Kotak Mahindra Bank",
+      "Axis Bank", "HCL Technologies", "Maruti Suzuki", "Sun Pharmaceutical", "Tata Motors",
+      "Mahindra & Mahindra", "Bajaj Auto", "Bajaj Finance", "Bajaj Finserv", "Nestle India",
+      "Hindustan Unilever", "ITC", "Larsen & Toubro", "NTPC", "ONGC", "Power Grid Corporation",
+      "Adani Ports", "Coal India", "Siemens India", "Bharat Electronics", "Adani Power", "JSW Steel",
+    ].includes(name)
       ? "2026-08-07"
       : formatDate(hashCode(name) % 5);
 

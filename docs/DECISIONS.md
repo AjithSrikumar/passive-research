@@ -280,9 +280,10 @@
 
 ---
 
-## ADR-012 — Bespoke per-company research notes (v0.7.0 → v0.8.0)
+## ADR-012 — Bespoke per-company research notes (v0.7.0 → v0.9.0)
 
-- **Date:** 2026-08-07 (extended 2026-08-07 to a six-note catalogue)
+- **Date:** 2026-08-07 (extended 2026-08-07 to a six-note catalogue;
+  extended again 2026-08-07 to a 33-note catalogue)
 - **Context:** The 25-section `ReportContent` framework (ADR-005) guarantees
   consistency, but it caps depth where a company deserves an institution-grade
   note. Product brief: completely redesign and rewrite the **Trent** report to
@@ -293,7 +294,13 @@
   structure to a further five companies — HDFC Bank, Reliance Industries,
   Titan, DMart (Avenue Supermarts) and Bharti Airtel — each on verified
   primary-source data (Q1 FY27 results, FY26 disclosures, broker consensus,
-  live quotes).
+  live quotes). **v0.9.0** extends it to the top-27-by-market-cap generic
+  reports (TCS, Infosys, HCLTech, SBI, ICICI Bank, HUL, ITC, Bajaj Finance,
+  L&T, Maruti, Sun Pharma, Tata Motors, M&M, Kotak, Axis, NTPC, ONGC, Power
+  Grid, Adani Ports, Coal India, Bajaj Finserv, Bajaj Auto, Siemens India,
+  Nestlé, BEL, Adani Power, JSW Steel) — 33 bespoke notes total; note the
+  Tata Motors demerger (listed entity is Tata Motors Passenger Vehicles) and
+  Siemens' 18-month FY26 (Oct-2024→Mar-2026).
 - **Problem:** Delivering a fully bespoke report for exactly one company
   without touching the framework every other company relies on (and without
   breaking the `reportToc` / `ReportToc` contract).
@@ -305,15 +312,21 @@
 - **Decision:** (c). `src/lib/notes/types.ts` defines `ResearchNote` (a KV
   header strip + ordered sections of typed blocks: paragraph, heading,
   callout, KV grid, table, driver matrix, cards, list, quote, risk register,
-  downloads, small print). `src/lib/notes/trent.ts` holds the Trent note,
-  followed by `hdfc-bank.ts`, `reliance.ts`, `titan.ts`, `dmart.ts` and
-  `bharti-airtel.ts` (v0.8.0);
-  `src/lib/notes/index.ts` is the registry (`getNote`, `hasNote`, `noteToc`).
+  downloads, small print). One content file per bespoke company —
+  `trent.ts`, `hdfc-bank.ts`, `reliance.ts`, `titan.ts`, `dmart.ts`,
+  `bharti-airtel.ts` (v0.8.0) plus 27 more in v0.9.0: `tcs.ts`, `infosys.ts`,
+  `hcl-technologies.ts`, `sbi.ts`, `icici-bank.ts`, `hul.ts`, `itc.ts`,
+  `bajaj-finance.ts`, `bajaj-finserv.ts`, `lnt.ts`, `maruti.ts`,
+  `sun-pharma.ts`, `tata-motors.ts`, `mahindra.ts`, `kotak.ts`, `axis.ts`,
+  `coal-india.ts`, `bajaj-auto.ts`, `siemens.ts`, `nestle.ts`, `bel.ts`,
+  `adani-power.ts`, `jsw-steel.ts`, `ntpc.ts`, `ongc.ts`, `power-grid.ts`,
+  `adani-ports.ts` — and `src/lib/notes/index.ts` is the
+  registry (`getNote`, `hasNote`, `noteToc`).
   `company/[slug]/page.tsx` branches once: note present → note + its TOC,
   note absent → generic `ReportContent` + `reportToc`. The analyst byline is
   omitted for note pages.
 - **Reasoning:** One registry key + one conditional; `ReportContent` and the
-  25-section framework are untouched for the other 132 companies; the block
+  25-section framework are untouched for the other 100 companies; the block
   model is server-rendered and safe (no `dangerouslySetInnerHTML`); content is
   plain-typed data, auditable and printable.
 - **Tradeoffs:** Two content renderers exist (generic + bespoke); a bespoke
@@ -326,7 +339,9 @@
   stacked table cards, print rules) in `globals.css`; v0.8.0 extended the
   verified-primary-source treatment to the five new notes and their
   `Company` rows (price/target/mcap/EPS/margin/ROE/thesis + `updatedDate`
-  pinned to the note date); docs updated. DB mirror
+  pinned to the note date); v0.9.0 repeated it for the 27 top-cap notes
+  (live quotes as of 2026-08-07; Tata Motors row reflects the post-demerger
+  TMPV entity; Siemens row reflects its 18-month FY26). Docs updated. DB mirror
   must be re-seeded after this change because `companies.ts` is the seed's
   source of truth (ADR-011).
 - **Future review:** If more companies earn bespoke notes, grow the block

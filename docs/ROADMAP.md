@@ -25,6 +25,13 @@
       (v0.8.0, ADR-012 extension)** — the same institutional note structure
       on verified primary-source data for five more large-caps; six of 133
       reports are now bespoke.
+- [x] **Bespoke notes ×27 — top market caps (v0.9.0, ADR-012 extension)** —
+      TCS, Infosys, HCLTech, SBI, ICICI Bank, HUL, ITC, Bajaj Finance, L&T,
+      Maruti, Sun Pharma, Tata Motors, M&M, Kotak, Axis, NTPC, ONGC, Power
+      Grid, Adani Ports, Coal India, Bajaj Finserv, Bajaj Auto, Siemens India,
+      Nestlé, BEL, Adani Power, JSW Steel on verified data (live quotes
+      2026-08-07); **33 of 133 reports are now bespoke** (Tata Motors row
+      reflects the post-demerger TMPV entity).
 - [ ] Editorial review pass of report language (M3).
 - [ ] First chart increment: financial history trend + margin bridge (H2
       partial).
@@ -43,8 +50,9 @@
 
 ## Next Month
 
-- Finish real-data enrichment for the top ~25 companies by market cap;
-  re-label estimates as sourced `[F]` per field.
+- Extend real-data enrichment and bespoke notes to the next tier of
+  mid/large-caps beyond the 33 currently bespoke; re-label estimates as
+  sourced `[F]` per field.
 - SVG chart library complete: history, margin bridge, target-price bridge,
   scenario ranges (per manual § XI).
 - Coverage search on index pages (M6); component extraction (M5).
@@ -75,4 +83,4 @@
 
 ---
 
-*Last updated: 2026-08-07 (Sprint 3 closed — six bespoke notes v0.7.0/v0.8.0)*
+*Last updated: 2026-08-07 (Sprint 3 closed — 33 bespoke notes v0.7.0–v0.9.0)*

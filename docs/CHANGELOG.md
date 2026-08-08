@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.9.0** — bespoke notes ×27 (top market caps; 33 total)
 - **0.8.0** — bespoke notes ×5 (HDFC Bank, Reliance, Titan, DMart, Airtel)
 - **0.7.0** — bespoke Trent research note (institutional redesign)
 - **0.6.0** — Postgres mirror + read-only JSON API
@@ -17,6 +18,59 @@ Version history:
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.9.0] — 2026-08-07
+
+Extended the bespoke-note layer (ADR-012) to the **top 27 companies by market
+cap**, converting their generic 25-section reports into bespoke institutional
+notes — **33 of 133 reports are now bespoke** (Trent + the six from v0.8.0 +
+these 27).
+
+### Added
+- 27 bespoke notes in `src/lib/notes/`: `tcs.ts`, `infosys.ts`,
+  `hcl-technologies.ts`, `sbi.ts`, `icici-bank.ts`, `hul.ts`, `itc.ts`,
+  `bajaj-finance.ts`, `bajaj-finserv.ts`, `lnt.ts`, `maruti.ts`,
+  `sun-pharma.ts`, `tata-motors.ts`, `mahindra.ts`, `kotak.ts`, `axis.ts`,
+  `ntpc.ts`, `ongc.ts`, `power-grid.ts`, `adani-ports.ts`, `coal-india.ts`,
+  `bajaj-auto.ts`, `siemens.ts`, `nestle.ts`, `bel.ts`, `adani-power.ts`,
+  `jsw-steel.ts`.
+- All 27 notes on verified primary-source data (Q1 FY27 results, FY26
+  disclosures, consensus, live quotes fetched 2026-08-07 directly from
+  stockanalysis.com — Yahoo v7 API 401, web-search rate-limited).
+- Handled structural changes: **Tata Motors** demerged by Nov-2025 — the
+  listed entity is Tata Motors Passenger Vehicles (NSE:TMPV, ₹345.90, mcap
+  ~₹1.27 lakh Cr) with CV separately listed; **Siemens India**'s FY26 is an
+  18-month period (Oct-2024→Mar-2026, revenue ₹16,787 Cr, OPM ~10%, net cash
+  ₹53,094 Cr, backlog ~₹45,000 Cr) — Q1 FY27 due 11-Aug, not yet reported.
+- All 27 `companies.ts` rows updated to verified figures (price/target/mcap/
+  FY26 revenue/PAT/margin/ROE/P/E/thesis) and added to the `updatedDate`
+  pinned-2026-08-07 list. Verified values e.g. TCS Buy ₹2,650 (₹2,455),
+  Infosys Buy ₹1,320 (₹1,175), HCLTech Accumulate ₹1,500 (₹1,356.6), SBI Buy
+  ₹1,230 (₹1,098), ICICI Buy ₹1,680 (₹1,420), Kotak Accumulate ₹460 (₹385),
+  Axis Accumulate ₹1,350 (₹1,102), HUL Accumulate ₹2,260 (₹2,078), ITC
+  Accumulate ₹320 (₹289), Bajaj Finance Buy ₹1,175 (₹1,060), L&T Accumulate
+  ₹4,497 (₹4,040), Maruti Accumulate ₹16,000 (₹13,984), Sun Pharma Buy
+  ₹2,167 (₹1,946), M&M Buy ₹4,100 (₹3,468.3), Bajaj Auto Accumulate ₹12,500
+  (₹11,856), Siemens Accumulate ₹4,300 (₹3,938), Nestlé Accumulate ₹1,592
+  (₹1,535), BEL Buy ₹465 (₹390), Adani Power Accumulate ₹252 (₹209), JSW
+  Accumulate ₹1,378 (₹1,298), NTPC Accumulate ₹400 (₹344.3), ONGC Buy ₹295
+  (₹237.3), Power Grid Buy ₹325 (₹271.6), Adani Ports Buy ₹1,950 (₹1,690).
+
+### Changed
+- `docs/ARCHITECTURE.md` (§3 layout + §10.1), `OPENCODE.md`, `docs/TASKS.md`,
+  `docs/ROADMAP.md` and `docs/DECISIONS.md` (ADR-012) updated to the 33-note
+  bespoke set.
+
+### Fixed
+- Various note authoring errors surfaced by `tsc --noEmit`: missing trailing
+  commas, stray keys (`essence`) violating the driver-row contract, typo'd
+  `monetary` → `monitor`, malformed KV pairs, unbalanced parentheses.
+
+Verified with `npm run lint` (clean), `npm run build` (174 static pages), and
+a dev-server smoke pass — all 27 note pages return 200 with the note body
+("What changed") present.
 
 ---
 

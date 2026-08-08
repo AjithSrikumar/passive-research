@@ -83,13 +83,15 @@ src/
     report.ts             # reportToc + report math helpers
     notes/                # Bespoke research notes (ADR-012)
       types.ts            # ResearchNote typed block model
-      trent.ts            # Bespoke Trent note content
-      hdfc-bank.ts        # Bespoke HDFC Bank note content
-      reliance.ts         # Bespoke Reliance note content
-      titan.ts            # Bespoke Titan note content
-      dmart.ts            # Bespoke DMart note content
-      bharti-airtel.ts    # Bespoke Bharti Airtel note content
       index.ts            # slug -> note registry (getNote/hasNote/noteToc)
+      # 33 bespoke note content files, one per company: trent.ts, hdfc-bank.ts,
+      # reliance.ts, titan.ts, dmart.ts, bharti-airtel.ts (v0.7.0-v0.8.0) plus
+      # tcs.ts, infosys.ts, hcl-technologies.ts, sbi.ts, icici-bank.ts,
+      # hul.ts, itc.ts, bajaj-finance.ts, lnt.ts, maruti.ts, sun-pharma.ts,
+      # tata-motors.ts, mahindra.ts, kotak.ts, axis.ts, coal-india.ts,
+      # bajaj-auto.ts, siemens.ts, nestle.ts, bel.ts, adani-power.ts,
+      # jsw-steel.ts, ntpc.ts, ongc.ts, power-grid.ts, adani-ports.ts,
+      # bajaj-finserv.ts (v0.9.0)
 ```
 
 ## 4. Data Flow
@@ -192,8 +194,8 @@ mirror:
   `readingTime`, `impliedPeOnTarget`, `scenarioCases`, `weightedTarget`,
   `pricedInAnalysis`, `totalReturnPct`, `impliedEps`, `round1`.
 - `notes/` (ADR-012) — typed bespoke-note registry: `types.ts` (block model),
-  `trent.ts` (content), `index.ts` (`getNote`/`hasNote`/`noteToc`). Pure data;
-  rendered by `ReportNote`, never by the generic framework.
+  `index.ts` (`getNote`/`hasNote`/`noteToc`) + 33 per-company content files.
+  Pure data; rendered by `ReportNote`, never by the generic framework.
 
 Contract notes:
 - All money amounts are **₹ crore**; prices are **₹ per share**.
@@ -230,9 +232,13 @@ When a company deserves a treatment the generic framework cannot express, a
 **bespoke note** is added to `src/lib/notes/` and registered by company slug.
 If a note exists for the slug, `company/[slug]/page.tsx` renders `ReportNote`
 (with the note's own TOC) instead of the generic `ReportContent`; the other
-128 companies are untouched. Six companies currently have notes: Trent
-(v0.7.0) plus HDFC Bank, Reliance Industries, Titan, DMart (Avenue Supermarts)
-and Bharti Airtel (v0.8.0). Each follows an initiation-note structure: it
+100 companies are untouched. **33 bespoke notes** exist: Trent (v0.7.0), HDFC
+Bank, Reliance Industries, Titan, DMart (Avenue Supermarts) and Bharti Airtel
+(v0.8.0), and the top-27-by-market-cap generic reports (TCS, Infosys, HCLTech,
+SBI, ICICI Bank, HUL, ITC, Bajaj Finance, L&T, Maruti, Sun Pharma, Tata Motors,
+M&M, Kotak, Axis, NTPC, ONGC, Power Grid, Adani Ports, Coal India, Bajaj
+Finserv, Bajaj Auto, Siemens India, Nestlé, BEL, Adani Power, JSW Steel —
+v0.9.0). Each follows an initiation-note structure: it
 replaces *Corporate Governance* with *Shareholding pattern*, uses real fiscal
 years (FY22–FY26 + Q1 FY27), omits the byline/evidence legend/AI wording,
 sources each claim to downloadable primary documents, and
