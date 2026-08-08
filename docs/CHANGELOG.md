@@ -5,7 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
-- **0.10.0** — factor model pipeline, schema, screener page
+- **0.10.0** — factor model pipeline, schema, screener + backtest pages
 - **0.9.0** — bespoke notes ×27 (top market caps; 33 total)
 - **0.8.0** — bespoke notes ×5 (HDFC Bank, Reliance, Titan, DMart, Airtel)
 - **0.7.0** — bespoke Trent research note (institutional redesign)
@@ -39,8 +39,11 @@ workbook values (RELI P/E FY12 10.30 = sheet value). A build-time snapshot
 the DB"): year selector, search, min-composite and min-block filters,
 sortable rank/composite/G/Q/V/M columns, CSV export, links to covered company
 pages (132/133 site slugs resolved via Coverage_Map + verified MANUAL_RIC;
-SKF India not in the NSE-900 universe). Nav + sitemap updated; lint clean,
-build green (175 pages).
+SKF India not in the NSE-900 universe). A second snapshot
+(`src/lib/factor/backtest.ts`: 14 years, 280 constituents) feeds the new
+**`/backtest` page**: yearly portfolio/benchmark/excess returns, IC,
+universe size, and per-year Top-20 constituents. Nav + sitemap updated; lint
+clean, build green (176 pages).
 
 ## [0.9.0] — 2026-08-07
 

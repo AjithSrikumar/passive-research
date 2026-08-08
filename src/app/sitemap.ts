@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/methodology",
     "/coverage-universe",
     "/screener",
+    "/backtest",
     "/contact",
     "/legal",
     "/terms",

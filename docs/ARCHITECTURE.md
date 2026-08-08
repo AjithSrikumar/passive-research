@@ -140,6 +140,9 @@ flowchart LR
   DB2 --> S[snapshot.ts]
   S --> D2[src/lib/factor/data.ts<br/>7,692 rows FY12-FY26]
   D2 --> P2[/screener/ FactorScreener]
+  DB2 --> S2[snapshot.ts backtest]
+  S2 --> D3[src/lib/factor/backtest.ts<br/>14 years x 20 constituents]
+  D3 --> P3[/backtest/]
 ```
 
 Model spec, corrected momentum definition and the Top-20 backtest convention
@@ -169,6 +172,7 @@ script so there is no flash; the toggle intentionally drives the DOM directly
 | `/company/[slug]` | **SSG** (`generateStaticParams`, `dynamicParams=false`) | 133 pages pre-rendered; unknown slug → 404 |
 | `/sectors/[slug]` | **SSG** (`generateStaticParams`) | 23 pages |
 | `/screener` | **Static** | Ranked factor table from `src/lib/factor/data.ts` |
+| `/backtest` | **Static** | Top-20 backtest from `src/lib/factor/backtest.ts` |
 | All other pages | **Static** | Prerendered at build |
 | `sitemap.xml` / `robots.txt` | Generated routes | Built from `metadataBase` (`https://passive-research.in`) |
 

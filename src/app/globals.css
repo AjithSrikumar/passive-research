@@ -2765,6 +2765,39 @@ main {
 
 /* ---------- Sort & misc ---------- */
 
+/* ---------- Factor backtest ---------- */
+
+.backtest-year {
+  margin-top: 44px;
+}
+
+.backtest-year-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.backtest-table td.positive,
+.backtest-constituents td.positive {
+  color: #16a34a;
+}
+
+.backtest-table td.negative,
+.backtest-constituents td.negative {
+  color: #dc2626;
+}
+
+.dark .backtest-table td.positive,
+.dark .backtest-constituents td.positive {
+  color: #4ade80;
+}
+
+.dark .backtest-table td.negative,
+.dark .backtest-constituents td.negative {
+  color: #f87171;
+}
+
 /* ---------- Factor screener ---------- */
 
 .filter-select,
