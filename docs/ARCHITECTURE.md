@@ -120,6 +120,30 @@ flowchart TB
   - `SearchCompanies` (live dropdown over the 133-company index)
   - `ResearchBrowser` (filter/sort of report list; reads `useSearchParams`)
   - `ReportToc` (IntersectionObserver scrollspy over `[data-report-section]`)
+  - `FactorScreener` (year/search/composite/block filters, sort, CSV export
+    over the static factor snapshot)
+
+### Factor model layer (v0.10.0)
+
+The four-factor model (growth/quality/valuation/momentum over the NSE-900
+universe, FY12–FY26) is imported from the source workbook by
+`scripts/factor-model/*` into the Postgres mirror (`db/factor_model.sql`,
+`npm run factor:import`), then reduced to a **build-time static snapshot**
+(`src/lib/factor/data.ts`, regenerated via
+`npx tsx scripts/factor-model/snapshot.ts`). Pages read only the snapshot —
+consistent with the rule that pages never depend on the DB:
+
+```mermaid
+flowchart LR
+  X[Factor-Dashboard-v4_Unbiased.xlsx] --> I[scripts/factor-model<br/>import.ts + score.ts + backtest.ts]
+  I --> DB2[factor_* tables<br/>db/factor_model.sql]
+  DB2 --> S[snapshot.ts]
+  S --> D2[src/lib/factor/data.ts<br/>7,692 rows FY12-FY26]
+  D2 --> P2[/screener/ FactorScreener]
+```
+
+Model spec, corrected momentum definition and the Top-20 backtest convention
+live in `docs/FACTOR_MODEL.md`; the DB schema in `docs/DATA_MODEL.md`.
 
 ### Theme flow
 
@@ -144,6 +168,7 @@ script so there is no flash; the toggle intentionally drives the DOM directly
 |---|---|---|
 | `/company/[slug]` | **SSG** (`generateStaticParams`, `dynamicParams=false`) | 133 pages pre-rendered; unknown slug → 404 |
 | `/sectors/[slug]` | **SSG** (`generateStaticParams`) | 23 pages |
+| `/screener` | **Static** | Ranked factor table from `src/lib/factor/data.ts` |
 | All other pages | **Static** | Prerendered at build |
 | `sitemap.xml` / `robots.txt` | Generated routes | Built from `metadataBase` (`https://passive-research.in`) |
 

@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# source workbook (17 MB, regenerated data; pipeline reads it from repo root)
+/Factor-Dashboard-v4_Unbiased.xlsx
+
 # vercel
 .vercel
 

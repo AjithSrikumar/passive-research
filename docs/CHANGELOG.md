@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.10.0** — factor model pipeline, schema, screener page
 - **0.9.0** — bespoke notes ×27 (top market caps; 33 total)
 - **0.8.0** — bespoke notes ×5 (HDFC Bank, Reliance, Titan, DMart, Airtel)
 - **0.7.0** — bespoke Trent research note (institutional redesign)
@@ -20,6 +21,26 @@ Version history:
 - **0.1.0** — Next.js conversion + full site build (baseline)
 
 ---
+
+## [0.10.0] — 2026-08-08
+
+Added the **factor-model data platform**: imports the NSE-900
+`Factor-Dashboard-v4_Unbiased.xlsx` workbook into a normalized Supabase schema
+(`db/factor_model.sql`: factor_companies/years/metrics/values/price_history/
+scores/composites/universe_membership/backtest_years/backtest_constituents),
+with a reproducible `tsx` pipeline (`npm run factor:import`) that corrects the
+workbook's buggy momentum (Price_Close_HY% was 2-year; recomputed as
+1-year `close_t/close_t-1 − 1`, RELI FY14 = 13.62%) and formalizes the
+backtest as **Top-20 equal-weight** (signal at FY-end close, exit at FY+1
+close, Spearman IC with N≥30) per `docs/FACTOR_MODEL.md`. Validated against
+workbook values (RELI P/E FY12 10.30 = sheet value). A build-time snapshot
+(`src/lib/factor/data.ts`, 7,692 rows across FY12–FY26) feeds the new
+**`/screener` page** (static SSG, per architecture rule "pages never depend on
+the DB"): year selector, search, min-composite and min-block filters,
+sortable rank/composite/G/Q/V/M columns, CSV export, links to covered company
+pages (132/133 site slugs resolved via Coverage_Map + verified MANUAL_RIC;
+SKF India not in the NSE-900 universe). Nav + sitemap updated; lint clean,
+build green (175 pages).
 
 ## [0.9.0] — 2026-08-07
 

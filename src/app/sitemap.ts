@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/about",
     "/methodology",
     "/coverage-universe",
+    "/screener",
     "/contact",
     "/legal",
     "/terms",

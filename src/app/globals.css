@@ -2765,6 +2765,112 @@ main {
 
 /* ---------- Sort & misc ---------- */
 
+/* ---------- Factor screener ---------- */
+
+.filter-select,
+.filter-input {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-2);
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--type-sm);
+  font-weight: 600;
+}
+
+.filter-input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.filter-select:focus-visible,
+.filter-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.filter-num {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-45);
+}
+
+.filter-num input {
+  width: 72px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-2);
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.filter-num input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.factor-table .th-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-transform: inherit;
+}
+
+.factor-table .th-btn:hover {
+  color: var(--accent);
+}
+
+.factor-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.score-cell {
+  min-width: 88px;
+}
+
+.score-bar {
+  display: inline-block;
+  vertical-align: middle;
+  width: 44px;
+  height: 6px;
+  border-radius: 4px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  margin-right: 8px;
+  overflow: hidden;
+}
+
+.score-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+}
+
+.dark .score-bar span {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+/* ---------- Sort & misc ---------- */
+
 .sort-row {
   display: flex;
   align-items: center;
