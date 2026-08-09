@@ -11,7 +11,6 @@ const NAV = [
   { label: "Sectors", href: "/sectors" },
   { label: "Screener", href: "/screener" },
   { label: "Backtest", href: "/backtest" },
-  { label: "Latest Research", href: "/latest-research" },
   { label: "About", href: "/about" },
   { label: "Methodology", href: "/methodology" },
   { label: "Contact", href: "/contact" },

@@ -239,6 +239,12 @@
   trademarks used for identification/nominative purposes only.
 - **Consequences:** Any new company added to `companies.ts` must ship a logo
   file `public/logos/<ticker>.png` or render the initials fallback.
+  **2026-08-09 (v0.11.1):** extended to the full NSE-900 universe — the
+  factor RIC codes are mapped to real NSE symbols
+  (`scripts/factor-model/map-symbols.ts`, `factor_companies.nse_symbol`,
+  672/900) and logos fetched into `public/logos/` (672 files); the screener
+  and backtest tables render them via `TickerLogo` (deterministic initials
+  fallback) and link every row to its `/company/<slug>` page.
 - **Future review:** If a company rebrands or a logo is wrong, replace the
   file in `public/logos/` (data-driven; no code change).
 

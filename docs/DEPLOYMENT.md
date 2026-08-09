@@ -23,8 +23,8 @@ npm run build
 npm start        # production server; or deploy via Vercel
 ```
 
-Expected build output: **172 static pages** (133 company + 23 sector + 16
-app routes: content pages, sitemap, robots, 404).
+Expected build output: **~900 static company pages** (901 `/company/[slug]`
+SSG + 23 sector + static app routes: content pages, sitemap, robots, 404).
 
 ## 3. CI/CD
 

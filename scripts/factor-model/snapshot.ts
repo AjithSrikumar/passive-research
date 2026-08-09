@@ -31,13 +31,52 @@ if (!DATABASE_URL) {
 
 const pool = new pg.Pool({ connectionString: DATABASE_URL, max: 4 });
 
+const slugify = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "company";
+
+/** Page slug per RIC: the covered company's slug when linked, otherwise a
+ *  deterministic slug generated from the name (deduped). Stable across runs. */
+function buildPageSlug(rows: { ric: string; company_slug: string | null; name: string }[]) {
+  const used = new Set<string>();
+  const map = new Map<string, string>();
+  for (const r of rows) {
+    if (r.company_slug) {
+      map.set(r.ric, r.company_slug);
+      used.add(r.company_slug);
+      continue;
+    }
+    let candidate = slugify(r.name);
+    let n = 2;
+    while (used.has(candidate)) candidate = `${slugify(r.name)}-${n++}`;
+    used.add(candidate);
+    map.set(r.ric, candidate);
+  }
+  return map;
+}
+
 async function main() {
+  const registry = await pool.query(`
+    SELECT ric, name, sector, company_slug, nse_symbol
+    FROM factor_companies
+    ORDER BY ric
+  `);
+  const pageSlugs = buildPageSlug(registry.rows);
+  const universe = registry.rows.map((r) => [
+    r.ric,
+    r.name,
+    r.sector,
+    pageSlugs.get(r.ric),
+    r.nse_symbol,
+  ]);
+
   const { rows } = await pool.query(`
     SELECT
       c.fiscal_year,
       c.ric,
       fc.name,
-      fc.company_slug AS slug,
       fc.sector,
       c.rank,
       c.composite,
@@ -61,7 +100,7 @@ async function main() {
     byYear.get(r.fiscal_year)!.push([
       r.ric,
       r.name,
-      r.slug,
+      pageSlugs.get(r.ric),
       r.sector,
       r.rank,
       Number(r.composite),
@@ -78,8 +117,8 @@ async function main() {
   lines.push("// Build-time static snapshot of the factor model (composites per");
   lines.push("// fiscal year). Regenerate after npm run factor:import.");
   lines.push("");
-  lines.push("/** [ric, name, companySlug|null, sector|null, rank, composite, growth, quality, valuation, momentum] */");
-  lines.push("export type FactorRowTuple = [string, string, string | null, string | null, number, number, number | null, number | null, number | null, number | null];");
+  lines.push("/** [ric, name, pageSlug, sector|null, rank, composite, growth, quality, valuation, momentum] */");
+  lines.push("export type FactorRowTuple = [string, string, string, string | null, number, number, number | null, number | null, number | null, number | null];");
   lines.push("");
   lines.push("export const FACTOR_YEARS: number[] = " + fmt(years) + ";");
   lines.push("");
@@ -89,11 +128,17 @@ async function main() {
   }
   lines.push("};");
   lines.push("");
+  lines.push("/** [ric, name, sector|null, pageSlug, nseSymbol|null] — every company in the factor universe (900). */");
+  lines.push("export type FactorCompanyTuple = [string, string, string | null, string, string | null];");
+  lines.push("");
+  lines.push("export const FACTOR_COMPANIES: FactorCompanyTuple[] = " + fmt(universe) + ";");
+  lines.push("");
 
   const outPath = join(__dir, "../../src/lib/factor/data.ts");
   writeFileSync(outPath, lines.join("\n"), "utf8");
   console.log(`snapshot written: ${outPath}`);
   console.log(`years: ${years.join(", ")}; total rows: ${rows.length}`);
+  console.log(`universe: ${universe.length} companies; ${universe.filter((u) => u[3] !== null).length} page slugs`);
 
   // ---- backtest snapshot ----
   const yearsRes = await pool.query(`
@@ -118,8 +163,8 @@ async function main() {
   backtestLines.push("/** [fiscalYear, nEligible, portfolioReturn, benchmarkReturn, excessReturn, ic, nConstituents] */");
   backtestLines.push("export type BacktestYearTuple = [number, number, number | null, number | null, number | null, number | null, number];");
   backtestLines.push("");
-  backtestLines.push("/** [fiscalYear, rank, ric, returnPct, name, companySlug|null] */");
-  backtestLines.push("export type BacktestConstituentTuple = [number, number, string, number, string, string | null];");
+  backtestLines.push("/** [fiscalYear, rank, ric, returnPct, name, pageSlug] */");
+  backtestLines.push("export type BacktestConstituentTuple = [number, number, string, number, string, string];");
   backtestLines.push("");
   backtestLines.push("export const BACKTEST_YEARS: BacktestYearTuple[] = " + JSON.stringify(
     yearsRes.rows.map((r) => [
@@ -134,7 +179,7 @@ async function main() {
   ) + ";");
   backtestLines.push("");
   backtestLines.push("export const BACKTEST_CONSTITUENTS: BacktestConstituentTuple[] = " + JSON.stringify(
-    constRes.rows.map((r) => [r.fiscal_year, r.rank, r.ric, Number(r.return_pct), r.name, r.slug])
+    constRes.rows.map((r) => [r.fiscal_year, r.rank, r.ric, Number(r.return_pct), r.name, pageSlugs.get(r.ric) ?? slugify(r.name)])
   ) + ";");
   backtestLines.push("");
   const backtestOut = join(__dir, "../../src/lib/factor/backtest.ts");

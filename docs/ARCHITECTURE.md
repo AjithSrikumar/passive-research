@@ -121,12 +121,18 @@ flowchart TB
   - `ResearchBrowser` (filter/sort of report list; reads `useSearchParams`)
   - `ReportToc` (IntersectionObserver scrollspy over `[data-report-section]`)
   - `FactorScreener` (year/search/composite/block filters, sort, CSV export
-    over the static factor snapshot)
+    over the static factor snapshot; logo + NSE symbol per row, links to the
+    company page)
   - `FactorScorecard` (server) — per-company factor history from
     `src/lib/factor/company.ts` on every `/company/[slug]` page
   - `FactorBacktestRunner` (client) — weight sliders, per-metric toggles,
     MinN/Top-N, Run → `POST /api/factor/backtest`; year dropdown over
-    portfolio years
+    portfolio years; logo rows in constituents + live tables
+  - `TickerLogo` (client) — `/logos/<SYMBOL>.png` with a deterministic
+    initials fallback (10-color palette)
+  - `GqvmScoreStrip` (server) — FY2026 Growth/Quality/Valuation/Momentum +
+    Total at 1 decimal + rank caption, at the top of every researched
+    company page
 
 ### Factor model layer (v2.0 GQVM)
 
@@ -143,9 +149,14 @@ with the rule that pages never depend on the DB:
 flowchart LR
   X[GQVM Factor Dashboard.xlsx] --> I[scripts/factor-model<br/>import.ts + score.ts + optimize.ts]
   I --> DB2[factor_* tables<br/>db/factor_model.sql]
+  DB2 --> M[map-symbols.ts<br/>nse_symbol 672/900]
+  M --> F[fetch-logos.ts<br/>public/logos 672 PNGs]
+  F --> T[TickerLogo<br/>initials fallback]
+  T --> P2[/screener/ FactorScreener]
   DB2 --> S[snapshot.ts]
-  S --> D2[src/lib/factor/data.ts<br/>6,150 rows FY13-FY26]
-  D2 --> P2[/screener/ FactorScreener]
+  S --> D2[src/lib/factor/data.ts<br/>6,150 rows FY13-FY26 +<br/>FACTOR_COMPANIES 900]
+  D2 --> P4[/company/[slug]/<br/>factor-only pages + GqvmScoreStrip]
+  D2 --> P2
   DB2 --> S2[snapshot.ts backtest]
   S2 --> D3[src/lib/factor/backtest.ts<br/>13 years x 20 constituents]
   D3 --> P3[/backtest/ FactorBacktestRunner]
@@ -196,7 +207,7 @@ script so there is no flash; the toggle intentionally drives the DOM directly
 
 | Route type | Strategy | Notes |
 |---|---|---|
-| `/company/[slug]` | **SSG** (`generateStaticParams`, `dynamicParams=false`) | 133 pages pre-rendered; unknown slug → 404 |
+| `/company/[slug]` | **SSG** (`generateStaticParams`, `dynamicParams=false`) | 901 pages pre-rendered: 133 covered + 767 factor-universe pages (`FACTOR_COMPANIES` registry); unknown slug → 404 |
 | `/sectors/[slug]` | **SSG** (`generateStaticParams`) | 23 pages |
 | `/screener` | **Static** | Ranked factor table from `src/lib/factor/data.ts` |
 | `/backtest` | **Static** | Top-20 backtest from `src/lib/factor/backtest.ts` |
@@ -214,7 +225,7 @@ since v0.6.0 there is also a small read-only JSON API backed by the Postgres
 mirror:
 
 - **HTML pages** — see `docs/API.md` for the full route table.
-- **`/sitemap.xml`** — all 172+ URLs with lastmod from data.
+- **`/sitemap.xml`** — 900+ URLs with lastmod from data.
 - **`/robots.txt`** — allow all, sitemap pointer.
 - **JSON-LD** — `ResearchArticle` schema on every `/company/[slug]` page,
   injected via `dangerouslySetInnerHTML` with data built from the internal
@@ -324,7 +335,7 @@ Development logs come from `next dev`.
   fallback) — no runtime image requests to third parties.
 - One stylesheet, no third-party CSS; DM Sans is self-hosted by
   `next/font` (no Google Fonts request at runtime).
-- Client JS is limited to the 6 interactive components; everything else is RSC
+- Client JS is limited to the 8 interactive components; everything else is RSC
   output.
 - `scroll-padding-top` + smooth scroll for anchor navigation.
 - Build-time goal: no network in the browser beyond the HTML/RSC payload.

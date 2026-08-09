@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.11.1** — company pages for all 900 factor companies + logos
 - **0.11.0** — GQVM model v2.0 + live FY2026 portfolio (dashboard parity)
 - **0.10.1** — parametric backtest + optimizer (dynamic weights, year dropdown)
 - **0.10.0** — factor model pipeline, schema, screener + backtest pages
@@ -21,6 +22,52 @@ Version history:
 - **0.3.0** — documentation system
 - **0.2.0** — institutional content upgrade
 - **0.1.0** — Next.js conversion + full site build (baseline)
+
+---
+
+## [0.11.1] — 2026-08-09
+
+Every company in the NSE-900 universe now has its own page with GQVM
+scores, real exchange symbols with fetched logos in every table, and the
+"Latest Research" entry removed from the main navigation.
+
+**Added**:
+
+- **Company pages for all 900 companies** — `src/app/company/[slug]`
+  `generateStaticParams` now covers the 133 researched companies plus all
+  767 remaining factor-universe names (901 SSG pages, `dynamicParams =
+  false`). Factor-only pages render breadcrumbs, logo, GQVM Total Score +
+  block scores at 1 decimal, and the full scorecard for every year
+  (2013–2026); every researched page gains the GQVM score strip at the top
+  (`GqvmScoreStrip`). Slugs are deterministic (covered companies keep
+  `company_slug`; others are name-derived, e.g. `bank-of-maharashtra-ltd`,
+  deduped with `-2`, `-3` suffixes).
+- **`FACTOR_COMPANIES` registry** — the snapshot now emits
+  `[ric, name, sector|null, pageSlug, nseSymbol|null]` for all 900
+  companies; `getFactorCompany(slug)` / `getFactorCompanyByRic(ric)` /
+  `factorTicker(ric)` in `src/lib/factor/company.ts` resolve pages and
+  logo symbols.
+- **Company logos** — `scripts/factor-model/map-symbols.ts` maps the
+  workbook RIC codes to real NSE symbols (covered-company tickers →
+  normalized-name match against the Nifty 50/Next 50/200/500 lists →
+  hand-verified manual map checked against the CDN → Yahoo Finance
+  search), storing `factor_companies.nse_symbol` (672/900 mapped; the
+  residual are delisted/renamed names). `fetch-logos.ts` pulls
+  `/logos/<SYMBOL>.png` from Dhan's CDN (482 fetched; 672 files total).
+  `TickerLogo` renders the logo with a deterministic initials fallback.
+- **Logos everywhere** — screener and backtest constituent tables show
+  logo + NSE symbol and link to the company page; the sitemap includes
+  all 901 company URLs.
+
+**Changed**:
+
+- Removed **"Latest Research"** from `Nav.tsx` (desktop + mobile); the
+  `/latest-research` page itself, footer link and hero CTA remain.
+
+**Fixed**:
+
+- Backtest live-top composite cell now formats with one decimal
+  (`pct(c.composite)`).
 
 ---
 

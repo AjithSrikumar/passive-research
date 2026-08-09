@@ -31,6 +31,7 @@
 | `sector` / `industry` | TEXT | From Companies sheet |
 | `removed_period` | TEXT NULL | `^K22`-style marker, or NULL if active |
 | `company_slug` | TEXT NULL REFERENCES companies(slug) | Link to covered site company (null = uncovered) |
+| `nse_symbol` | TEXT NULL | Real NSE symbol (e.g. `MAHABANK`), mapped by `scripts/factor-model/map-symbols.ts` for logo fetching; null = delisted/unmapped |
 
 ### factor_years
 
@@ -47,7 +48,7 @@
 | `metric_key` | TEXT PK | `rev_3yr_cagr`, `pe`, `price_close_mom_1y`, … |
 | `sheet` | TEXT | Workbook sheet name (e.g. `Rev_3Yr_CAGR`, `P_E`) |
 | `block` | TEXT CHECK (growth/quality/valuation/momentum) |
-| `block_weight` | NUMERIC | 0.30 / 0.30 / 0.30 / 0.10 |
+| `block_weight` | NUMERIC | 0.20 / 0.10 / 0.60 / 0.10 (GQVM v2.0) |
 | `weight_in_block` | NUMERIC | 0.125, 0.142857, or 1.0 |
 | `higher_is_better` | BOOLEAN | FALSE → inverted percentile |
 | `display_name` | TEXT | For UI |

@@ -19,7 +19,7 @@ All routes respond `GET` with `text/html` (pre-rendered). Base URL:
 | `/research` | Research browser | Client filter/sort; reads `?sector=` & `?q=` |
 | `/sectors` | Sector index | 23 sector cards |
 | `/sectors/[slug]` | Sector detail | Companies in sector; unknown → 404 |
-| `/company/[slug]` | Company report | 25-section report + JSON-LD; unknown → 404 |
+| `/company/[slug]` | Company report | Researched: 25-section report + JSON-LD; factor-only: GQVM score page; unknown → 404 |
 | `/latest-research` | Recently updated | Sorted by `updatedDate` |
 | `/coverage-universe` | All companies | Alphabetical |
 | `/methodology` | Methodology | Framework/evidence/valuation/rating docs |
@@ -30,7 +30,7 @@ All routes respond `GET` with `text/html` (pre-rendered). Base URL:
 
 | Route | Method | Content |
 |---|---|---|
-| `/sitemap.xml` | GET | XML sitemap: 11 static pages (lastmod = build date), 23 sector pages, 133 company pages (lastmod = `updatedDate`) |
+| `/sitemap.xml` | GET | XML sitemap: 11 static pages (lastmod = build date), 23 sector pages, 901 company pages (133 researched + 768 factor-universe) |
 | `/robots.txt` | GET | `User-agent: *` / `Allow: /` + sitemap pointer |
 
 ## 2. Structured Data (JSON-LD)

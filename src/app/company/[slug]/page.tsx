@@ -5,17 +5,27 @@ import { companies, formatCr, formatPrice, formatUpdated, getCompany } from "@/l
 import { sectorName } from "@/lib/sectors";
 import { reportToc, readingTime, upsides } from "@/lib/report";
 import CompanyLogo from "@/components/CompanyLogo";
+import TickerLogo from "@/components/TickerLogo";
 import RatingBadge from "@/components/RatingBadge";
 import ReportToc from "@/components/ReportToc";
 import ReportContent from "@/components/ReportContent";
 import ReportNote from "@/components/ReportNote";
 import FactorScorecard from "@/components/FactorScorecard";
-import { getNote, noteToc } from "@/lib/notes";
+import GqvmScoreStrip from "@/components/GqvmScoreStrip";
+import { getNote, hasNote, noteToc } from "@/lib/notes";
+import { FACTOR_COMPANIES } from "@/lib/factor/data";
+import { getFactorCompany } from "@/lib/factor/company";
 
 export const dynamicParams = false;
 
+const coveredSlugs = new Set(companies.map((c) => c.slug));
+
 export function generateStaticParams() {
-  return companies.map((c) => ({ slug: c.slug }));
+  const covered = companies.map((c) => ({ slug: c.slug }));
+  const factorOnly = FACTOR_COMPANIES
+    .filter(([, , , slug]) => !coveredSlugs.has(slug))
+    .map(([, , , slug]) => ({ slug }));
+  return [...covered, ...factorOnly];
 }
 
 export async function generateMetadata({
@@ -25,7 +35,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const c = getCompany(slug);
-  if (!c) return {};
+  if (!c) {
+    const fc = getFactorCompany(slug);
+    if (!fc) return {};
+    const title = `${fc.name} (${fc.ticker}) — GQVM Factor Scores`;
+    return {
+      title,
+      description: `${fc.name} (NSE: ${fc.ticker}) GQVM factor scores: growth, quality, valuation, momentum and total score at one decimal, ranked year by year in the NSE-900 universe${fc.sector ? ` · ${fc.sector}` : ""}.`,
+      keywords: [fc.name, fc.ticker, `${fc.name} factor scores`, "GQVM", "equity research India"],
+      openGraph: { type: "website", title, description: `GQVM factor scores for ${fc.name}.` },
+    };
+  }
   const title = `${c.name} (${c.ticker}) — ${c.recommendation} Rating, Target ${formatPrice(c.targetPrice)}`;
   return {
     title,
@@ -56,8 +76,61 @@ export default async function CompanyPage({
 }) {
   const { slug } = await params;
   const c = getCompany(slug);
-  if (!c) notFound();
+
+  if (!c) {
+    const fc = getFactorCompany(slug);
+    if (!fc) notFound();
+    return (
+      <main>
+        <section className="report-hero">
+          <div className="report-hero-inner">
+            <div className="report-breadcrumbs">
+              <Link href="/">Home</Link> →
+              <Link href="/screener">Screener</Link> →
+              <span>{fc.name}</span>
+            </div>
+
+            <div className="report-title-row">
+              <TickerLogo ticker={fc.ticker} name={fc.name} size={64} />
+              <div style={{ flex: 1, minWidth: 240 }}>
+                <h1>{fc.name}</h1>
+                <p style={{ color: "var(--text-45)", fontSize: 14.5 }}>
+                  {fc.sector ?? "NSE"} · NSE: {fc.ticker} ·{" "}
+                  <Link href="/screener" style={{ color: "var(--accent)" }}>
+                    NSE-900 GQVM research universe
+                  </Link>
+                </p>
+              </div>
+            </div>
+
+            <p style={{ fontSize: 15.5, color: "var(--text-65)", maxWidth: 760 }}>
+              GQVM factor profile: growth, quality, valuation and momentum scores
+              recomputed from the source workbook every fiscal year, with the
+              weighted total score (1 decimal) and rank in the NSE-900 universe.
+            </p>
+
+            <GqvmScoreStrip slug={slug} />
+
+            <div className="report-byline">
+              <span className="avatar">F</span>
+              <div>
+                <b>Factor Model</b>
+                <span>
+                  Scorecard only — full equity research is available for the{" "}
+                  <Link href="/research">133 covered companies</Link>.
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <FactorScorecard slug={slug} />
+      </main>
+    );
+  }
+
   const note = getNote(slug);
+  const bespoke = hasNote(slug);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -148,6 +221,8 @@ export default async function CompanyPage({
               <span>ROE</span>
             </div>
           </div>
+
+          {bespoke && <GqvmScoreStrip slug={slug} />}
 
           {!note && (
             <div className="report-byline">

@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { FACTOR_YEARS, type FactorRowTuple } from "@/lib/factor/data";
+import { factorTicker } from "@/lib/factor/company";
+import TickerLogo from "@/components/TickerLogo";
 
 interface Props {
   byYear: Record<number, FactorRowTuple[]>;
@@ -179,17 +181,13 @@ export default function FactorScreener({ byYear }: Props) {
                 <tr key={`${year}-${ric}`}>
                   <td className="num">{rank}</td>
                   <td>
-                    {slug ? (
-                      <Link href={`/company/${slug}`} className="co-name">
+                    <Link href={`/company/${slug}`} className="co-name">
+                      <TickerLogo ticker={factorTicker(ric)} name={name} size={28} />
+                      <span className="co-name-text">
                         {name}
-                        <span className="co-ticker">{ric}</span>
-                      </Link>
-                    ) : (
-                      <span className="co-name">
-                        {name}
-                        <span className="co-ticker">{ric}</span>
+                        <span className="co-ticker">{factorTicker(ric)}</span>
                       </span>
-                    )}
+                    </Link>
                   </td>
                   <td>{sector ?? "—"}</td>
                   <td className="num">

@@ -9,12 +9,14 @@ import {
 } from "@/lib/factor/params";
 import type { BacktestParams, Block, YearResult } from "@/lib/factor/engine";
 import type { BacktestConstituentTuple, BacktestYearTuple } from "@/lib/factor/backtest";
+import { factorTicker } from "@/lib/factor/company";
+import TickerLogo from "@/components/TickerLogo";
 
 interface Props {
   staticYears: BacktestYearTuple[];
   staticConstituents: BacktestConstituentTuple[];
   /** Live FY26 top-N (rank, ric, name, slug, composite) from the snapshot. */
-  liveTop: { rank: number; ric: string; name: string; slug: string | null; composite: number }[];
+  liveTop: { rank: number; ric: string; name: string; slug: string; composite: number }[];
 }
 
 interface ApiResponse {
@@ -332,17 +334,13 @@ export default function FactorBacktestRunner({ staticYears, staticConstituents, 
                   <tr key={`${c.rank}-${c.ric}`}>
                     <td className="num">{c.rank}</td>
                     <td>
-                      {c.slug ? (
-                        <Link href={`/company/${c.slug}`} className="co-name">
+                      <Link href={`/company/${c.slug}`} className="co-name">
+                        <TickerLogo ticker={factorTicker(c.ric)} name={c.name} size={28} />
+                        <span className="co-name-text">
                           {c.name}
-                          <span className="co-ticker">{c.ric}</span>
-                        </Link>
-                      ) : (
-                        <span className="co-name">
-                          {c.name}
-                          <span className="co-ticker">{c.ric}</span>
+                          <span className="co-ticker">{factorTicker(c.ric)}</span>
                         </span>
-                      )}
+                      </Link>
                     </td>
                     <td className={`num ${pctCls(c.returnPct)}`}>{pct(c.returnPct)}</td>
                   </tr>
@@ -377,19 +375,15 @@ export default function FactorBacktestRunner({ staticYears, staticConstituents, 
                 <tr key={c.ric}>
                   <td className="num">{c.rank}</td>
                   <td>
-                    {c.slug ? (
-                      <Link href={`/company/${c.slug}`} className="co-name">
+                    <Link href={`/company/${c.slug}`} className="co-name">
+                      <TickerLogo ticker={factorTicker(c.ric)} name={c.name} size={28} />
+                      <span className="co-name-text">
                         {c.name}
-                        <span className="co-ticker">{c.ric}</span>
-                      </Link>
-                    ) : (
-                      <span className="co-name">
-                        {c.name}
-                        <span className="co-ticker">{c.ric}</span>
+                        <span className="co-ticker">{factorTicker(c.ric)}</span>
                       </span>
-                    )}
+                    </Link>
                   </td>
-                  <td className="num">{c.composite.toFixed(4)}</td>
+                  <td className="num">{pct(c.composite)}</td>
                 </tr>
               ))}
             </tbody>

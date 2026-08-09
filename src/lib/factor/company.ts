@@ -1,5 +1,6 @@
-import { FACTOR_BY_YEAR, FACTOR_YEARS } from "@/lib/factor/data";
+import { FACTOR_BY_YEAR, FACTOR_COMPANIES, FACTOR_YEARS } from "@/lib/factor/data";
 import { BACKTEST_CONSTITUENTS } from "@/lib/factor/backtest";
+import { tickerFromRic } from "@/lib/factor/ric";
 
 const RIC = 0;
 const SLUG = 2;
@@ -9,6 +10,43 @@ const GROWTH = 6;
 const QUALITY = 7;
 const VALUATION = 8;
 const MOMENTUM = 9;
+
+export interface FactorCompany {
+  ric: string;
+  name: string;
+  sector: string | null;
+  slug: string;
+  ticker: string;
+}
+
+const registryBySlug = new Map<string, FactorCompany>();
+const registryByRic = new Map<string, FactorCompany>();
+for (const [ric, name, sector, slug, nseSymbol] of FACTOR_COMPANIES) {
+  const company: FactorCompany = {
+    ric,
+    name,
+    sector,
+    slug,
+    ticker: nseSymbol ?? tickerFromRic(ric),
+  };
+  registryBySlug.set(slug, company);
+  registryByRic.set(ric, company);
+}
+
+/** Look up any of the 900 companies in the factor universe by page slug. */
+export function getFactorCompany(slug: string): FactorCompany | undefined {
+  return registryBySlug.get(slug);
+}
+
+/** Look up any of the 900 companies in the factor universe by RIC. */
+export function getFactorCompanyByRic(ric: string): FactorCompany | undefined {
+  return registryByRic.get(ric);
+}
+
+/** NSE symbol (for /logos/<symbol>.png) or a RIC-derived fallback. */
+export function factorTicker(ric: string): string {
+  return getFactorCompanyByRic(ric)?.ticker ?? tickerFromRic(ric);
+}
 
 export interface CompanyFactorYear {
   fiscalYear: number;
