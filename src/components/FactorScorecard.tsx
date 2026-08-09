@@ -26,10 +26,10 @@ export default function FactorScorecard({ slug }: { slug: string }) {
         <div className="factor-scorecard-head">
           <h2>Factor Model Scores</h2>
           <p>
-            Rank in the four-factor model universe — growth 30%, quality 30%,
-            valuation 30%, momentum 10% (
+            Rank in the GQVM factor model universe — growth 20%, quality 10%,
+            valuation 60%, momentum 10% (
             <Link href="/screener">open screener</Link> ·{" "}
-            <Link href="/backtest">backtest record</Link>).
+            <Link href="/backtest">backtest record</Link>). FY{latest.fiscalYear + 2000} is live.
           </p>
         </div>
 

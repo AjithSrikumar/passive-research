@@ -11,21 +11,23 @@ import {
 /**
  * POST /api/factor/backtest
  * Runs the factor backtest with caller-supplied parameters (factor weights,
- * per-metric weights, MinN, TopN) against the imported factor data.
- * Signal years are FY13..FY25 (FY12 is excluded from the backtest).
+ * per-metric weights, MinN, MinFactors, TopN) against the imported factor data.
+ * Signal years are FY13..FY25 (FY26 = live, no forward return yet).
  *
- * Body (all optional; omitted values fall back to the optimized defaults):
+ * Body (all optional; omitted values fall back to the GQVM recommended defaults):
  *   { blockWeights?: Record<"growth"|"quality"|"valuation"|"momentum", number>,
  *     metricWeights?: Record<string, number>,   // 0 = metric excluded
- *     minN?: number,                            // default 50
+ *     minN?: number,                            // default 2
+ *     minFactors?: number,                      // default 3
  *     topN?: number }                           // default 20
  */
 
 export const dynamic = "force-dynamic";
 
 const BLOCKS: Block[] = ["growth", "quality", "valuation", "momentum"];
-const DEFAULT_BLOCK_WEIGHTS: Record<Block, number> = { growth: 0, quality: 0, valuation: 1, momentum: 0 };
-const DEFAULT_MIN_N = 50;
+const DEFAULT_BLOCK_WEIGHTS: Record<Block, number> = { growth: 0.2, quality: 0.1, valuation: 0.6, momentum: 0.1 };
+const DEFAULT_MIN_N = 2;
+const DEFAULT_MIN_FACTORS = 3;
 const DEFAULT_TOP_N = 20;
 const SIGNAL_YEARS: number[] = [];
 for (let fy = 13; fy <= 25; fy++) SIGNAL_YEARS.push(fy);
@@ -61,6 +63,11 @@ interface DbCompanyRow {
   ric: string;
   name: string;
   company_slug: string | null;
+}
+
+interface DbBenchmarkRow {
+  fiscal_year: number;
+  return_pct: string | null;
 }
 
 const num = (v: string) => Number(v);
@@ -104,7 +111,13 @@ function buildParams(body: unknown, metrics: DbMetricRow[]): { params: BacktestP
   if (b.minN !== undefined) {
     const v = parseNumber(b.minN);
     if (v === null) return { params: null, error: "minN must be a finite number" };
-    minN = Math.round(clamp(v, 20, 500));
+    minN = Math.round(clamp(v, 2, 500));
+  }
+  let minFactors = DEFAULT_MIN_FACTORS;
+  if (b.minFactors !== undefined) {
+    const v = parseNumber(b.minFactors);
+    if (v === null) return { params: null, error: "minFactors must be a finite number" };
+    minFactors = Math.round(clamp(v, 1, 4));
   }
   let topN = DEFAULT_TOP_N;
   if (b.topN !== undefined) {
@@ -113,7 +126,7 @@ function buildParams(body: unknown, metrics: DbMetricRow[]): { params: BacktestP
     topN = Math.round(clamp(v, 1, 100));
   }
 
-  return { params: { blockWeights, metricWeights, minN, topN }, error: null };
+  return { params: { blockWeights, metricWeights, minN, minFactors, topN }, error: null };
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -132,12 +145,13 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const [metricRes, valueRes, closeRes, membershipRes, companyRes] = await Promise.all([
+    const [metricRes, valueRes, closeRes, membershipRes, companyRes, benchmarkRes] = await Promise.all([
       queryText<DbMetricRow>("SELECT metric_key, block, higher_is_better, weight_in_block, display_name FROM factor_metrics ORDER BY metric_key"),
       queryText<DbValueRow>(`SELECT ric, metric_key, fiscal_year, value FROM factor_values WHERE fiscal_year BETWEEN $1 AND $2`, [SIGNAL_YEARS[0], SIGNAL_YEARS[SIGNAL_YEARS.length - 1]]),
       queryText<DbCloseRow>("SELECT ric, fiscal_year, close FROM factor_price_history"),
       queryText<DbMembershipRow>("SELECT ric, fiscal_year, is_member FROM universe_membership"),
       queryText<DbCompanyRow>("SELECT ric, name, company_slug FROM factor_companies"),
+      queryText<DbBenchmarkRow>("SELECT fiscal_year, return_pct FROM factor_benchmark"),
     ]);
     if (metricRes.rows.length === 0) {
       return Response.json({ error: "Factor data is empty — run `npm run factor:import` first." }, { status: 503 });
@@ -162,8 +176,12 @@ export async function POST(request: Request): Promise<Response> {
     for (const r of membershipRes.rows) membership.set(`${r.ric}|${r.fiscal_year}`, r.is_member);
     const names = new Map<string, { name: string; slug: string | null }>();
     for (const r of companyRes.rows) names.set(r.ric, { name: r.name, slug: r.company_slug });
+    const benchmark = new Map<number, number>();
+    for (const r of benchmarkRes.rows) {
+      if (r.return_pct !== null) benchmark.set(r.fiscal_year, num(r.return_pct));
+    }
 
-    const data: FactorData = { years: SIGNAL_YEARS, metrics, values, membership, closes, names };
+    const data: FactorData = { years: SIGNAL_YEARS, metrics, values, membership, closes, names, benchmark };
     const results: YearResult[] = runFactorBacktest(data, params);
     const mean = (fn: (r: YearResult) => number) => (results.length === 0 ? 0 : results.reduce((s, r) => s + fn(r), 0) / results.length);
 

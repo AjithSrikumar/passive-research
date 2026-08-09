@@ -6,7 +6,7 @@ import { FACTOR_BY_YEAR, FACTOR_YEARS } from "@/lib/factor/data";
 export const metadata: Metadata = {
   title: "Factor Screener",
   description:
-    "Rank the full Passive research universe on the four-factor model — growth, quality, valuation and momentum — with composite scores for every fiscal year from FY12.",
+    "Rank the full research universe on the GQVM factor model — growth, quality, valuation and momentum — with composite scores for every fiscal year from FY13.",
 };
 
 export default function ScreenerPage() {
@@ -20,8 +20,8 @@ export default function ScreenerPage() {
           <span className="eyebrow">Factor Screener</span>
           <h1>Rank Every Company on Four Factors</h1>
           <p>
-            {count} companies ranked for FY{latest + 2000} — growth 30%, quality
-            30%, valuation 30%, momentum 10%. Filters, sortable columns and CSV
+            {count} companies ranked for FY{latest + 2000} — growth 20%, quality
+            10%, valuation 60%, momentum 10%. Filters, sortable columns and CSV
             export. Read the model in{" "}
             <Link href="/methodology" className="inline-link">
               Methodology

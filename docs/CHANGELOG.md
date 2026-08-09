@@ -5,6 +5,7 @@ versioned. Format: **Added / Changed / Fixed / Removed / Security**.
 
 Version history:
 
+- **0.11.0** — GQVM model v2.0 + live FY2026 portfolio (dashboard parity)
 - **0.10.1** — parametric backtest + optimizer (dynamic weights, year dropdown)
 - **0.10.0** — factor model pipeline, schema, screener + backtest pages
 - **0.9.0** — bespoke notes ×27 (top market caps; 33 total)
@@ -22,6 +23,94 @@ Version history:
 - **0.1.0** — Next.js conversion + full site build (baseline)
 
 ---
+
+## [0.11.0] — 2026-08-09
+
+Migrated the factor platform to the **GQVM Factor Dashboard** model
+(`GQVM Factor Dashboard.xlsx`, repo root, not committed) — v2.0 per
+`docs/FACTOR_MODEL.md` — with **full parity against the dashboard's own
+cached outputs** (validation gates at 1e-9), the **live FY2026 portfolio**
+and FY2026 GQVM scores on every company page.
+
+**Added**:
+
+- **Import validation gates** — `scripts/factor-model/import.ts` now
+  recomputes composites, top-20 portfolios, annual strategy + benchmark
+  returns and the full stats suite from the workbook and compares them
+  with the dashboard's cached values before writing: rank match
+  **5,656/5,656 (100%)**, composite max abs diff 1.1e-16, top-20 RICs
+  **13/13 years**, annual returns **13/13 years**, NAV max abs diff
+  2.3e-13, CAGR/vol/Sharpe/MDD/hit-rate/IR all equal (CAGR 18.14%,
+  Sharpe 0.622, NAV 873.33). Any check failing within 1e-9 aborts the
+  DB writes; the live FY2026 top-10 is printed on every run.
+- **Live FY2026 portfolio** — `/backtest` shows a "live FY2026" panel
+  with the current top-20 (BMBK.NS 0.8527, JKBK.NS, UNBK.NS, CHPC.NS,
+  NALU.NS, SCI.NS, WGSR.NS, BOI.NS, GENA.NS, PNBK.NS, …); a
+  `bt-live-badge` styles the panel.
+- **MinFactors control** — `FactorBacktestRunner` gains a MinFactors
+  select (1..4); the engine/API validate it.
+- **Benchmark from DB** — `factor_benchmark` table (Nifty 50 PRICE
+  index annual returns, end-June closes) feeds the backtest benchmark;
+  the API returns it per year; equal-weight-universe fallback retained.
+- **FY2026 scorecards** — every `/company/[slug]` scorecard now shows
+  the live FY2026 GQVM composite/rank (year-dynamic data layer).
+
+**Changed**:
+
+- **Model spec (v2.0)** — universe = `Nifty500_Composition` per-year
+  membership × `Coverage_Map` "Covered" × `Companies` (deduped), sizes
+  381..496 per year FY13–FY26; metrics = 23 fundamental + momentum
+  recomputed 1-year from `Price_Close` (52W sheet ignored); percentile =
+  `COUNTIF(< v)/(n−1)` exactly like the dashboard (minimum scores 0);
+  block score = mean of available metric percentiles; composite =
+  renormalized weighted mean over available blocks; ranked only with ≥3
+  block scores; ties by RIC.
+- **Defaults pinned to the dashboard's recommended GQVM config** —
+  weights **G 0.2 / Q 0.1 / V 0.6 / M 0.1**, all 24 metrics, minN 2,
+  minFactors 3, topN 20 (was Valuation 1.0 / P/E-only / MinN 50 from the
+  v0.10.1 optimizer). `POST /api/factor/backtest` defaults and the UI
+  match; `OPTIMIZER_SUMMARY` now carries the engine-computed stats of the
+  recommended config.
+- **Optimizer rewritten exploration-only** — `npm run factor:optimize`
+  searches block weights → metric inclusion → MinN×Top-N → refined
+  weights over the workbook data (best informational: G0.2/Q0.1/V0.6/M0.1,
+  minN 2, topN 10, Revenue-3Y-CAGR/ROE/P-BV only, mean 26.03% vs 12.59%,
+  excess +13.44%) but **reports only** — written defaults stay pinned to
+  the dashboard-validated GQVM config.
+- **Snapshot** — scored years now **FY13–FY26** (FY12 has prices only):
+  `data.ts` 6,150 rows (was 7,692 FY12–FY26); `backtest.ts` 13 years ×
+  20 = 260 constituents; per-year scored counts 366..494.
+- **Derived tables rebuilt** — `factor_composites`, `factor_scores`,
+  `universe_membership` are DELETEd and reinserted on every import so no
+  stale rows from v1.0 (e.g. FY12 × 900) survive; backtest tables were
+  already rebuilt.
+- Screener/backtest/scorecard copy now states the GQVM weights, FY13+
+  history and the "research universe" framing; live year noted on
+  scorecards.
+- `docs/FACTOR_MODEL.md` rewritten for v2.0 (spec + validation gates);
+  `docs/ARCHITECTURE.md` factor-layer section updated.
+
+**Fixed**:
+
+- **Engine block-presence bug** — a block was considered missing when its
+  weighted score was 0, so a legitimate 0 percentile (worst-in-universe,
+  e.g. LVLS.NS^L20 momentum FY15) dropped the block from the composite
+  renormalization and inflated scores (0.8200 vs dashboard 0.7379),
+  corrupting the FY15 top-20. Blocks now count as present when any metric
+  percentile exists, even 0.
+- **Dashboard portfolio loader offset** — portfolios were read starting
+  at row 4 but the FY2013 block starts at row 2, skipping ranks 1–2
+  (ALOK.NS, SNTX.NS^C23) during validation; now reads from row 2.
+- **Year-key bug** — `yearRaw − 2000` in the import's portfolio loader
+  produced a bad year for validation lookups.
+
+**Tests** — `tests/factor/engine.test.ts` rewritten for the
+COUNTIF/(n−1) percentile (incl. lower-better inversion, worst = 0),
+zero-percentile block presence (topN 6 still ranks the composite-0
+holding), minN 7 → empty constituents, GQVM default exact-match;
+`tests/factor/snapshot.test.ts` covers FY13–FY26 with RELI FY26 = 0.5656
+— **20 tests green**. Lint clean, build green, live DB import + snapshot
+verified.
 
 ## [0.10.1] — 2026-08-08
 

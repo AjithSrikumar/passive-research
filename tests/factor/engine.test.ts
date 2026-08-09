@@ -47,14 +47,16 @@ const MODEL_PARAMS: BacktestParams = {
   blockWeights: { growth: 0.5, quality: 0, valuation: 0.5, momentum: 0 },
   metricWeights: { rev: 1, pe: 1, momentum_1y: 1 },
   minN: 2,
+  minFactors: 1,
   topN: 2,
 };
 
 describe("percentileOf", () => {
-  it("averages ties and flips direction for lower-is-better", () => {
-    expect(percentileOf([1, 2, 2, 3], 4, 2, true)).toBe(1); // rank 3 of 4 -> (1+2/2+1)/3
-    expect(percentileOf([1, 2, 2, 3], 4, 2, false)).toBeCloseTo(0.667, 3);
-    expect(percentileOf([5], 1, 5, true)).toBe(1);
+  it("computes below/(n-1) and flips direction for lower-is-better", () => {
+    expect(percentileOf([1, 2, 2, 3], 4, 2, true)).toBeCloseTo(1 / 3, 9); // 1 of 4 values below 2
+    expect(percentileOf([1, 2, 2, 3], 4, 2, false)).toBeCloseTo(2 / 3, 9);
+    expect(percentileOf([1, 2, 2, 3], 4, 1, true)).toBe(0); // worst value scores 0
+    expect(percentileOf([5], 1, 5, true)).toBeUndefined(); // n < 2
   });
 });
 
@@ -62,8 +64,8 @@ describe("runFactorBacktest conventions", () => {
   const data = makeData();
 
   it("selects top-N by composite using custom block + metric weights", () => {
-    // rev percentile (higher): F=1.1, E=0.9, D=0.7, C=0.5, B=0.3, A=0.1
-    // pe percentile (lower):  F=1.1, E=0.9, D=0.7, C=0.5, B=0.3, A=0.1
+    // rev percentile (higher): F=1, E=0.8, D=0.6, C=0.4, B=0.2, A=0
+    // pe percentile (lower, inverted): F=1, E=0.8, D=0.6, C=0.4, B=0.2, A=0
     const results = runFactorBacktest(data, MODEL_PARAMS);
     const r13 = results.find((r) => r.fiscalYear === 13)!;
     expect(r13.nEligible).toBe(6);
@@ -71,10 +73,25 @@ describe("runFactorBacktest conventions", () => {
     // returns: F=180/150-1=0.20, E=160/140-1=0.142857
     expect(r13.constituents[0].returnPct).toBeCloseTo(0.2, 9);
     expect(r13.portfolioReturn).toBeCloseTo((0.2 + 0.14285714285714285) / 2, 9);
+    // NAV chains from 100
+    expect(r13.nav).toBeCloseTo(100 * (1 + r13.portfolioReturn), 9);
     // benchmark = mean of all six one-year returns
     const returns = [110 / 100 - 1, 100 / 110 - 1, 140 / 120 - 1, 120 / 130 - 1, 160 / 140 - 1, 180 / 150 - 1];
     expect(r13.benchmarkReturn).toBeCloseTo(returns.reduce((s, x) => s + x, 0) / 6, 9);
     expect(r13.excessReturn).toBeCloseTo(r13.portfolioReturn - r13.benchmarkReturn, 9);
+  });
+
+  it("counts a zero-percentile block as present (no renormalization bias)", () => {
+    // A has the worst rev AND worst pe -> both percentiles 0; the blocks must
+    // still count as present so A is rankable (minFactors 2) with composite 0.
+    const results = runFactorBacktest(data, {
+      ...MODEL_PARAMS,
+      minFactors: 2,
+      topN: 6,
+    });
+    const r13 = results.find((r) => r.fiscalYear === 13)!;
+    expect(r13.constituents.map((c) => c.ric)).toEqual(["F", "E", "D", "C", "B", "A"]);
+    expect(r13.constituents[5].composite).toBe(0);
   });
 
   it("recomputes momentum from prices and honors momentum block weight", () => {
@@ -87,11 +104,11 @@ describe("runFactorBacktest conventions", () => {
     expect(r13.constituents[0].ric).toBe("F"); // highest 1-year price change
   });
 
-  it("excludes metrics below MinN and falls back to RIC tiebreak when no metric qualifies", () => {
-    const results = runFactorBacktest(data, { ...MODEL_PARAMS, minN: 7 });
+  it("excludes metrics below MinN: no qualifying metric leaves nothing rankable", () => {
+    const results = runFactorBacktest(data, { ...MODEL_PARAMS, minN: 7, minFactors: 0 });
     const r13 = results.find((r) => r.fiscalYear === 13)!;
-    expect(r13.constituents.map((c) => c.ric)).toEqual(["A", "B"]); // all composites 0 -> ric order
-    expect(r13.portfolioReturn).toBeCloseTo((110 / 100 - 1 + 100 / 110 - 1) / 2, 9);
+    expect(r13.constituents).toEqual([]);
+    expect(r13.portfolioReturn).toBe(0);
   });
 
   it("returns null IC below N=30 and a value with a big enough cross-section", () => {
@@ -141,8 +158,10 @@ describe("default params sanity", () => {
   });
 
   it("defaults are within UI ranges", () => {
-    expect(DEFAULT_BACKTEST_PARAMS.minN).toBeGreaterThanOrEqual(50);
+    expect(DEFAULT_BACKTEST_PARAMS.minN).toBeGreaterThanOrEqual(2);
     expect(DEFAULT_BACKTEST_PARAMS.minN).toBeLessThanOrEqual(150);
+    expect(DEFAULT_BACKTEST_PARAMS.minFactors).toBeGreaterThanOrEqual(1);
+    expect(DEFAULT_BACKTEST_PARAMS.minFactors).toBeLessThanOrEqual(4);
     expect(DEFAULT_BACKTEST_PARAMS.topN).toBeGreaterThanOrEqual(10);
     expect(DEFAULT_BACKTEST_PARAMS.topN).toBeLessThanOrEqual(30);
     for (const key of ["growth", "quality", "valuation", "momentum"] as const) {
@@ -150,5 +169,12 @@ describe("default params sanity", () => {
       expect(w).toBeGreaterThanOrEqual(0);
       expect(w).toBeLessThanOrEqual(1);
     }
+  });
+
+  it("GQVM defaults match the dashboard's recommended configuration", () => {
+    expect(DEFAULT_BACKTEST_PARAMS.blockWeights).toEqual({ growth: 0.2, quality: 0.1, valuation: 0.6, momentum: 0.1 });
+    expect(DEFAULT_BACKTEST_PARAMS.minN).toBe(2);
+    expect(DEFAULT_BACKTEST_PARAMS.minFactors).toBe(3);
+    expect(DEFAULT_BACKTEST_PARAMS.topN).toBe(20);
   });
 });

@@ -65,6 +65,12 @@ CREATE TABLE IF NOT EXISTS factor_composites (
 
 CREATE INDEX IF NOT EXISTS idx_factor_composites_year_rank ON factor_composites(fiscal_year, rank);
 
+CREATE TABLE IF NOT EXISTS factor_benchmark (
+  fiscal_year SMALLINT PRIMARY KEY REFERENCES factor_years(fiscal_year),
+  nifty_close NUMERIC NOT NULL,
+  return_pct  NUMERIC
+);
+
 CREATE TABLE IF NOT EXISTS universe_membership (
   ric         TEXT NOT NULL REFERENCES factor_companies(ric) ON DELETE CASCADE,
   fiscal_year SMALLINT NOT NULL REFERENCES factor_years(fiscal_year),

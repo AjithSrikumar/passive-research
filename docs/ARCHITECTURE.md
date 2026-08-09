@@ -128,22 +128,23 @@ flowchart TB
     MinN/Top-N, Run → `POST /api/factor/backtest`; year dropdown over
     portfolio years
 
-### Factor model layer (v0.10.0 → v0.10.1)
+### Factor model layer (v2.0 GQVM)
 
-The four-factor model (growth/quality/valuation/momentum over the NSE-900
-universe, FY12–FY26) is imported from the source workbook by
-`scripts/factor-model/*` into the Postgres mirror (`db/factor_model.sql`,
-`npm run factor:import`), then reduced to **build-time static snapshots**
-(`src/lib/factor/data.ts`, `src/lib/factor/backtest.ts`, regenerated via
-`npx tsx scripts/factor-model/snapshot.ts`). Pages read only the snapshots —
-consistent with the rule that pages never depend on the DB:
+The GQVM factor model (growth/quality/valuation/momentum over the NSE-900
+universe, **FY13–FY26 scored**, FY26 live) is imported from the source
+workbook (`GQVM Factor Dashboard.xlsx`) by `scripts/factor-model/*` into
+the Postgres mirror (`db/factor_model.sql`, `npm run factor:import`), then
+reduced to **build-time static snapshots** (`src/lib/factor/data.ts`,
+`src/lib/factor/backtest.ts`, regenerated via
+`npm run factor:snapshot`). Pages read only the snapshots — consistent
+with the rule that pages never depend on the DB:
 
 ```mermaid
 flowchart LR
-  X[Factor-Dashboard-v4_Unbiased.xlsx] --> I[scripts/factor-model<br/>import.ts + score.ts + optimize.ts]
+  X[GQVM Factor Dashboard.xlsx] --> I[scripts/factor-model<br/>import.ts + score.ts + optimize.ts]
   I --> DB2[factor_* tables<br/>db/factor_model.sql]
   DB2 --> S[snapshot.ts]
-  S --> D2[src/lib/factor/data.ts<br/>7,692 rows FY12-FY26]
+  S --> D2[src/lib/factor/data.ts<br/>6,150 rows FY13-FY26]
   D2 --> P2[/screener/ FactorScreener]
   DB2 --> S2[snapshot.ts backtest]
   S2 --> D3[src/lib/factor/backtest.ts<br/>13 years x 20 constituents]
@@ -153,21 +154,26 @@ flowchart LR
   A --> P3
 ```
 
-Since v0.10.1 the backtest is **parametric**: `src/lib/factor/engine.ts`
-is the one shared, pure implementation of the backtest math (block weights,
-per-metric weights, MinN, Top-N) used by (a) the import seeding the DB
-tables, (b) the dynamic `POST /api/factor/backtest` route (server-only,
-reads the mirror), and (c) the `/backtest` page. The page renders the
-static snapshot instantly and can upgrade to live custom runs; the API
-returns 503 (and the page falls back to the snapshot) when no
-`DATABASE_URL` is configured. The default parameters are produced by the
-optimizer (`npm run factor:optimize`, `scripts/factor-model/optimize.ts`),
-which grid-searches the workbook data for the highest mean portfolio
-return and writes `src/lib/factor/params.ts`.
+The backtest is **parametric**: `src/lib/factor/engine.ts` is the one
+shared, pure implementation of the backtest math (block weights,
+per-metric weights, MinN, MinFactors, Top-N, benchmark) used by (a) the
+import seeding the DB tables, (b) the dynamic `POST /api/factor/backtest`
+route (server-only, reads the mirror, benchmark from `factor_benchmark`),
+and (c) the `/backtest` page. The page renders the static snapshot
+instantly and can upgrade to live custom runs; the API returns 503 (and
+the page falls back to the snapshot) when no `DATABASE_URL` is configured.
+The default parameters are pinned to the dashboard's recommended GQVM
+configuration (`src/lib/factor/params.ts`: weights 0.2/0.1/0.6/0.1, all 24
+metrics, minN 2, minFactors 3, topN 20); `npm run factor:optimize`
+(`scripts/factor-model/optimize.ts`) explores alternatives but reports
+only, since import's validation gates require dashboard parity.
 
-Model spec, corrected momentum definition, the backtest convention, the
-optimizer and the in-sample caveat live in `docs/FACTOR_MODEL.md`; the DB
-schema in `docs/DATA_MODEL.md`.
+The import is **validated against the workbook's own cached outputs**
+(composites, top-20 portfolios, annual returns, NAV/stats — full parity at
+1e-9; see `docs/FACTOR_MODEL.md` §7), so the DB mirror and the dashboard
+cannot drift. Model spec, scoring algorithm, backtest convention and
+data-quality rules live in `docs/FACTOR_MODEL.md`; the DB schema in
+`docs/DATA_MODEL.md`.
 
 ### Theme flow
 

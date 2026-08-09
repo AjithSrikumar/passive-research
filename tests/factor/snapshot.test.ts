@@ -11,16 +11,16 @@ import {
 } from "@/lib/factor/company";
 
 describe("factor snapshot integrity", () => {
-  it("covers FY12 through FY26", () => {
-    expect(FACTOR_YEARS[0]).toBe(12);
+  it("covers FY13 through FY26", () => {
+    expect(FACTOR_YEARS[0]).toBe(13);
     expect(FACTOR_YEARS[FACTOR_YEARS.length - 1]).toBe(26);
-    expect(FACTOR_YEARS.length).toBe(15);
+    expect(FACTOR_YEARS.length).toBe(14);
     expect(latestFiscalYear()).toBe(26);
   });
 
   it("has ranked rows per year with non-empty universe", () => {
     for (const fy of FACTOR_YEARS) {
-      expect(rankedCount(fy)).toBeGreaterThan(400);
+      expect(rankedCount(fy)).toBeGreaterThan(350);
       const rows = FACTOR_BY_YEAR[fy];
       for (const [i, row] of rows.entries()) {
         expect(row[4]).toBe(i + 1); // ranks are contiguous from 1
@@ -71,7 +71,7 @@ describe("getCompanyFactorHistory", () => {
     const last = h![h!.length - 1];
     expect(last.fiscalYear).toBe(26);
     expect(last.ric).toBe("RELI.NS");
-    expect(last.composite).toBeCloseTo(0.4782, 3);
+    expect(last.composite).toBeCloseTo(0.5656, 3);
   });
 
   it("returns null for companies outside the NSE-900 universe", () => {

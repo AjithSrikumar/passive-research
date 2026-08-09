@@ -15,9 +15,9 @@ export interface YearValues {
   values: Map<number, number>; // fiscal_year -> value
 }
 
-export interface MembershipRow {
+export interface UniverseMember {
   ric: string;
-  years: Map<number, boolean>;
+  name: string;
 }
 
 const RIC_RE = /^[A-Z0-9.]+\.(NS|BO)(\^[A-Z]\d{2})?$/;
@@ -77,7 +77,7 @@ export function loadCompanies(ws: ExcelJS.Worksheet): CompanyRow[] {
   return out;
 }
 
-/** Read a metric sheet: header at HEADER_ROW, per-year columns from YEAR_COL_FIRST. */
+/** Read a metric sheet: header at HEADER_ROW, per-year columns from YEAR_COL_FIRST (D = FY12). */
 export function loadMetricSheet(ws: ExcelJS.Worksheet): YearValues[] {
   const out: YearValues[] = [];
   for (let r = DATA_START_ROW; r <= ws.rowCount; r++) {
@@ -94,19 +94,58 @@ export function loadMetricSheet(ws: ExcelJS.Worksheet): YearValues[] {
   return out;
 }
 
-/** Nifty500 membership: boolean per company per year (FY12 col blank). */
-export function loadMembership(ws: ExcelJS.Worksheet): MembershipRow[] {
-  const out: MembershipRow[] = [];
-  for (let r = DATA_START_ROW; r <= ws.rowCount; r++) {
-    const raw = cellValue(ws.getRow(r).getCell(2));
-    if (!isRicCell(raw)) continue;
-    const { ric } = parseRic(raw);
-    const years = new Map<number, boolean>();
-    for (const fy of FISCAL_YEARS) {
-      const v = cellValue(ws.getRow(r).getCell(yearColumn(fy)));
-      years.set(fy, v === true);
+/**
+ * Per-year Nifty500 universe (FY13..FY26), in composition order.
+ * Each year's universe is rebuilt from THAT year's Nifty500_Composition
+ * column via Coverage_Map (Status='Covered' -> RIC) intersected with the
+ * Companies sheet. Duplicate RICs within a year keep only the first
+ * occurrence (renamed/merged entities), per the workbook's bias-control
+ * rules. Returns a Map<year, UniverseMember[]>; missing years are absent.
+ */
+export function loadUniverse(wb: ExcelJS.Workbook, companyRics: Set<string>): Map<number, UniverseMember[]> {
+  const comp = wb.getWorksheet("Nifty500_Composition")!;
+  const cover = wb.getWorksheet("Coverage_Map")!;
+
+  // Coverage_Map: constituent name -> { ric, status } (exact trimmed-name match)
+  const coverage = new Map<string, { ric: string; status: string }>();
+  for (let r = 5; r <= cover.rowCount; r++) {
+    const name = cellValue(cover.getRow(r).getCell(2));
+    const ric = cellValue(cover.getRow(r).getCell(5));
+    const status = cellValue(cover.getRow(r).getCell(6));
+    if (typeof name === "string" && name.trim() && typeof ric === "string" && ric.trim()) {
+      if (!coverage.has(name.trim())) coverage.set(name.trim(), { ric: ric.trim(), status: typeof status === "string" ? status.trim() : "" });
     }
-    out.push({ ric, years });
+  }
+
+  const out = new Map<number, UniverseMember[]>();
+  for (let c = 3; c <= 18; c++) {
+    const yearRaw = cellValue(comp.getRow(13).getCell(c));
+    if (typeof yearRaw !== "number") continue;
+    const year = yearRaw - 2000;
+    const members: UniverseMember[] = [];
+    const seen = new Set<string>();
+    for (let r = 14; r <= comp.rowCount; r++) {
+      const name = cellValue(comp.getRow(r).getCell(c));
+      if (typeof name !== "string" || !name.trim()) continue;
+      const mapped = coverage.get(name.trim());
+      if (!mapped || mapped.status !== "Covered") continue;
+      if (!companyRics.has(mapped.ric)) continue; // must be present in the Companies sheet
+      if (seen.has(mapped.ric)) continue; // keep only the first occurrence of a RIC
+      seen.add(mapped.ric);
+      members.push({ ric: mapped.ric, name: name.trim() });
+    }
+    out.set(year, members);
+  }
+  return out;
+}
+
+/** Benchmark_Nifty50: year -> Nifty 50 PRICE-index close (end-June). */
+export function loadBenchmark(ws: ExcelJS.Worksheet): Map<number, number> {
+  const out = new Map<number, number>();
+  for (let r = 7; r <= ws.rowCount; r++) {
+    const year = cellValue(ws.getRow(r).getCell(1));
+    const close = cellValue(ws.getRow(r).getCell(3));
+    if (typeof year === "number" && typeof close === "number" && Number.isFinite(close)) out.set(year, close);
   }
   return out;
 }

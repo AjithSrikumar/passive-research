@@ -3,12 +3,16 @@
  * Shared by:
  *  - POST /api/factor/backtest (custom weights/parameters)
  *  - scripts/factor-model/optimize.ts (default-parameter search)
+ *  - scripts/factor-model/import.ts (seed the backtest tables)
  *  - tests/factor/*.test.ts
  *
- * The engine reproduces the import pipeline's math (see score.ts/backtest.ts)
- * but takes block weights, per-metric weights, MinN and TopN as parameters,
- * so users can run their own backtest. Signal years are FY13..FY25 (FY12 is
- * excluded from the backtest by design).
+ * Reproduces the GQVM dashboard's math (see scripts/factor-model/score.ts):
+ * per-metric percentiles p = COUNTIF(< v)/(COUNT-1) within each year's
+ * included universe (inverted for value + two quality metrics), factor
+ * scores = mean of available percentiles, composite = renormalized weighted
+ * mean of available factor scores, rankable with >= minFactors scores, ties
+ * broken by RIC, Top-N equal-weight portfolio, forward returns FYnn->FY(nn+1).
+ * Signal years are FY13..FY25 (FY26 is the live year, no forward return).
  */
 
 export type Block = "growth" | "quality" | "valuation" | "momentum";
@@ -17,17 +21,19 @@ export interface MetricMeta {
   key: string;
   block: Block;
   higherIsBetter: boolean;
-  /** Model default weight within its block (0.125, 1/7, 1.0). */
+  /** Model default weight within its block (GQVM: equal weights, all 1.0). */
   weightInBlock: number;
 }
 
 export interface BacktestParams {
-  /** Factor weights: growth/quality/valuation/momentum (need not sum to 1; ranking is scale-invariant). */
+  /** Factor weights: growth/quality/valuation/momentum (renormalized over available factors). */
   blockWeights: Record<Block, number>;
   /** Per-metric weight; 0 = excluded from the block. Renormalized within block. */
   metricWeights: Record<string, number>;
-  /** Minimum cross-section for a metric to count in a year. */
+  /** Minimum cross-section for a metric's percentile to count in a year (GQVM: 2). */
   minN: number;
+  /** Minimum number of factor scores for a stock to be rankable (GQVM: 3). */
+  minFactors: number;
   /** Portfolio size (Top-N). */
   topN: number;
 }
@@ -38,12 +44,14 @@ export interface FactorData {
   metrics: MetricMeta[];
   /** `${ric}|${metricKey}|${fy}` -> value */
   values: Map<string, number>;
-  /** `${ric}|${fy}` -> Nifty500 membership */
+  /** `${ric}|${fy}` -> included in that year's universe */
   membership: Map<string, boolean>;
-  /** `${ric}|${fy}` -> annual close */
+  /** `${ric}|${fy}` -> annual close (FY12 present for FY13 momentum) */
   closes: Map<string, number>;
   /** ric -> { name, slug } */
   names: Map<string, { name: string; slug: string | null }>;
+  /** fy -> Nifty 50 PRICE-index annual return over fy..fy+1 (fallback: universe mean) */
+  benchmark?: Map<number, number>;
 }
 
 export interface ConstituentRow {
@@ -62,7 +70,22 @@ export interface YearResult {
   benchmarkReturn: number;
   excessReturn: number;
   ic: number | null;
+  /** NAV after this year's return (chained from NAV_START at the first year). */
+  nav: number;
   constituents: ConstituentRow[];
+}
+
+export interface BacktestStats {
+  navFinal: number;
+  cagr: number;
+  vol: number;
+  sharpe: number;
+  maxDrawdown: number;
+  hitRate: number;
+  informationRatio: number;
+  meanPortfolioReturn: number;
+  meanBenchmarkReturn: number;
+  meanExcessReturn: number;
 }
 
 /**
@@ -72,9 +95,9 @@ export interface YearResult {
  */
 export type PercentileCache = Map<number, Map<string, Map<string, number>>>;
 
-/** Percentile with ties averaged: rank = below + equal/2 (1-based). */
-export function percentileOf(sorted: number[], n: number, value: number, higherIsBetter: boolean): number {
-  if (n <= 1) return 1;
+/** GQVM percentile: below / (n-1), inverted for lower-is-better metrics. */
+export function percentileOf(sorted: number[], n: number, value: number, higherIsBetter: boolean): number | undefined {
+  if (n < 2) return undefined;
   let lo = 0;
   let hi = n;
   while (lo < hi) {
@@ -82,15 +105,8 @@ export function percentileOf(sorted: number[], n: number, value: number, higherI
     if (sorted[mid] < value) lo = mid + 1;
     else hi = mid;
   }
-  const below = lo;
-  let hi2 = n;
-  while (hi2 > lo) {
-    const mid = (lo + hi2 - 1) >> 1;
-    if (sorted[mid] === value) lo = mid + 1;
-    else hi2 = mid;
-  }
-  const rank = higherIsBetter ? below + (lo - below) / 2 + 1 : n - below - (lo - below) / 2;
-  return rank / (n - 1);
+  const p = lo / (n - 1);
+  return higherIsBetter ? p : 1 - p;
 }
 
 function spearman(a: number[], b: number[]): number {
@@ -120,7 +136,7 @@ function spearman(a: number[], b: number[]): number {
   return num / Math.sqrt(da * db);
 }
 
-/** Nifty500 members in the given signal year (the backtest universe). */
+/** Nifty500 members included in the given signal year (the backtest universe). */
 export function eligibleCompanies(data: FactorData, fy: number): string[] {
   const out: string[] = [];
   for (const ric of data.names.keys()) {
@@ -166,7 +182,10 @@ export function buildPercentileCache(data: FactorData, minN: number): Percentile
       if (rows.length < minN) continue;
       const sorted = rows.map((r) => r.value).sort((a, b) => a - b);
       const map = new Map<string, number>();
-      for (const r of rows) map.set(r.ric, percentileOf(sorted, sorted.length, r.value, meta.higherIsBetter));
+      for (const r of rows) {
+        const p = percentileOf(sorted, sorted.length, r.value, meta.higherIsBetter);
+        if (p !== undefined) map.set(r.ric, p);
+      }
       byMetric.set(meta.key, map);
     }
     cache.set(fy, byMetric);
@@ -177,9 +196,11 @@ export function buildPercentileCache(data: FactorData, minN: number): Percentile
 /**
  * Runs the factor backtest for every signal year with the given parameters.
  * Conventions: signal at FY-end close, entry at same close, exit at FY+1
- * close; equal-weight Top-N; benchmark = equal-weight eligible universe;
- * IC = Spearman(composite, realized return), N ≥ 30. Momentum is recomputed
- * as close(fy)/close(fy-1) - 1 from prices.
+ * close; equal-weight Top-N (holdings without a forward price are excluded
+ * from the average, never imputed); benchmark = Nifty 50 index return when
+ * available (FactorData.benchmark), else equal-weight eligible universe;
+ * IC = Spearman(composite, realized return), N >= 30. NAV chained from 100
+ * at the first signal year.
  *
  * If `cache` is provided it must have been built with the same minN as
  * `p.minN`; otherwise it is built here.
@@ -201,6 +222,7 @@ export function runFactorBacktest(data: FactorData, p: BacktestParams, cache?: P
   }
 
   const results: YearResult[] = [];
+  let nav = 100;
   for (const fy of data.years) {
     const universe = eligibleCompanies(data, fy);
     const n = universe.length;
@@ -211,6 +233,7 @@ export function runFactorBacktest(data: FactorData, p: BacktestParams, cache?: P
     // block scores by accumulating present rics per on-metric (fast path:
     // iterates percentile maps instead of all metrics per ric)
     const blockScore = new Map<Block, Float64Array>();
+    const blockWeightSum = new Map<Block, Float64Array>();
     for (const block of blocks) {
       const weighted = new Float64Array(n);
       const weightSum = new Float64Array(n);
@@ -227,47 +250,59 @@ export function runFactorBacktest(data: FactorData, p: BacktestParams, cache?: P
       const scores = new Float64Array(n);
       for (let i = 0; i < n; i++) scores[i] = weightSum[i] === 0 ? 0 : weighted[i] / weightSum[i];
       blockScore.set(block, scores);
+      blockWeightSum.set(block, weightSum);
     }
 
-    // composite + rank
+    // composite (renormalized over available factors) + rank
     const g = blockScore.get("growth")!;
     const q = blockScore.get("quality")!;
     const v = blockScore.get("valuation")!;
     const m = blockScore.get("momentum")!;
-    const ranked: { ric: string; composite: number }[] = new Array(n);
+    const ranked: { ric: string; composite: number }[] = [];
     for (let i = 0; i < n; i++) {
-      ranked[i] = {
-        ric: universe[i],
-        composite: p.blockWeights.growth * g[i]
-          + p.blockWeights.quality * q[i]
-          + p.blockWeights.valuation * v[i]
-          + p.blockWeights.momentum * m[i],
-      };
+      const available = (blockWeightSum.get("growth")![i] ? 1 : 0)
+        + (blockWeightSum.get("quality")![i] ? 1 : 0)
+        + (blockWeightSum.get("valuation")![i] ? 1 : 0)
+        + (blockWeightSum.get("momentum")![i] ? 1 : 0);
+      let weightSum = 0;
+      let weighted = 0;
+      if (p.blockWeights.growth > 0 && blockWeightSum.get("growth")![i]) { weighted += p.blockWeights.growth * g[i]; weightSum += p.blockWeights.growth; }
+      if (p.blockWeights.quality > 0 && blockWeightSum.get("quality")![i]) { weighted += p.blockWeights.quality * q[i]; weightSum += p.blockWeights.quality; }
+      if (p.blockWeights.valuation > 0 && blockWeightSum.get("valuation")![i]) { weighted += p.blockWeights.valuation * v[i]; weightSum += p.blockWeights.valuation; }
+      if (p.blockWeights.momentum > 0 && blockWeightSum.get("momentum")![i]) { weighted += p.blockWeights.momentum * m[i]; weightSum += p.blockWeights.momentum; }
+      if (available < p.minFactors || weightSum === 0) continue;
+      ranked.push({ ric: universe[i], composite: weighted / weightSum });
     }
-    ranked.sort((a, b) => b.composite - a.composite || a.ric.localeCompare(b.ric));
+    ranked.sort((a, b) => b.composite - a.composite || (a.ric < b.ric ? -1 : a.ric > b.ric ? 1 : 0));
+
+    const withReturn = new Set<string>();
+    for (const r of ranked.slice(0, p.topN)) if (returnPct(data, r.ric, fy) !== undefined) withReturn.add(r.ric);
 
     const selected = ranked.slice(0, p.topN).map((r, i) => {
       const info = data.names.get(r.ric)!;
+      const ret = returnPct(data, r.ric, fy);
       return {
         rank: i + 1,
         ric: r.ric,
         name: info.name,
         slug: info.slug,
-        returnPct: returnPct(data, r.ric, fy) ?? 0,
+        returnPct: ret ?? 0,
         composite: r.composite,
       };
     });
 
-    const portfolioReturn = selected.length > 0
-      ? selected.reduce((s, c) => s + c.returnPct, 0) / selected.length
+    const portfolioReturn = withReturn.size > 0
+      ? selected.filter((c) => withReturn.has(c.ric)).reduce((s, c) => s + c.returnPct, 0) / withReturn.size
       : 0;
 
-    const bench = ranked
-      .map((r) => returnPct(data, r.ric, fy))
-      .filter((v): v is number => v !== undefined);
-    const benchmarkReturn = bench.length > 0
-      ? bench.reduce((s, x) => s + x, 0) / bench.length
-      : 0;
+    const benchSource = data.benchmark?.get(fy);
+    let benchmarkReturn = benchSource;
+    if (benchmarkReturn === undefined) {
+      const bench = ranked
+        .map((r) => returnPct(data, r.ric, fy))
+        .filter((x): x is number => x !== undefined);
+      benchmarkReturn = bench.length > 0 ? bench.reduce((s, x) => s + x, 0) / bench.length : 0;
+    }
 
     const icScores: number[] = [];
     const icReturns: number[] = [];
@@ -280,6 +315,7 @@ export function runFactorBacktest(data: FactorData, p: BacktestParams, cache?: P
     }
     const ic = icScores.length >= 30 ? spearman(icScores, icReturns) : null;
 
+    nav *= 1 + portfolioReturn;
     results.push({
       fiscalYear: fy,
       nEligible: universe.length,
@@ -287,6 +323,7 @@ export function runFactorBacktest(data: FactorData, p: BacktestParams, cache?: P
       benchmarkReturn,
       excessReturn: portfolioReturn - benchmarkReturn,
       ic,
+      nav,
       constituents: selected,
     });
   }
@@ -297,4 +334,55 @@ export function runFactorBacktest(data: FactorData, p: BacktestParams, cache?: P
 export function meanPortfolioReturn(results: YearResult[]): number {
   if (results.length === 0) return 0;
   return results.reduce((s, r) => s + r.portfolioReturn, 0) / results.length;
+}
+
+const stdevP = (xs: number[]): number => {
+  const n = xs.length;
+  if (n < 2) return 0;
+  const mean = xs.reduce((s, x) => s + x, 0) / n;
+  return Math.sqrt(xs.reduce((s, x) => s + (x - mean) ** 2, 0) / n);
+};
+
+/**
+ * GQVM backtest summary stats (mirrors the dashboard's Backtest_Results):
+ * CAGR over the NAV series, STDEV.P vol, Sharpe with the risk-free rate,
+ * max drawdown on the NAV series (including the start point), hit rate
+ * (years beating the benchmark), and information ratio.
+ */
+export function computeStats(results: YearResult[], riskFreeRate = 0.065): BacktestStats {
+  const n = results.length;
+  const returns = results.map((r) => r.portfolioReturn);
+  const bench = results.map((r) => r.benchmarkReturn);
+  const excess = results.map((r) => r.excessReturn);
+
+  const mean = (xs: number[]) => (xs.length === 0 ? 0 : xs.reduce((s, x) => s + x, 0) / xs.length);
+  const navSeries = [100, ...results.map((r) => r.nav)];
+  let peak = navSeries[0];
+  let maxDrawdown = 0;
+  for (const x of navSeries) {
+    peak = Math.max(peak, x);
+    maxDrawdown = Math.min(maxDrawdown, x / peak - 1);
+  }
+
+  const navFinal = results.length ? results[results.length - 1].nav : 100;
+  const cagr = n > 0 ? Math.pow(navFinal / 100, 1 / n) - 1 : 0;
+  const vol = stdevP(returns);
+  const meanRet = mean(returns);
+  const meanBench = mean(bench);
+  const meanExcess = mean(excess);
+  const hitRate = n > 0 ? returns.filter((r, i) => r > bench[i]).length / n : 0;
+  const ir = stdevP(excess) === 0 ? 0 : meanExcess / stdevP(excess);
+
+  return {
+    navFinal,
+    cagr,
+    vol,
+    sharpe: vol === 0 ? 0 : (meanRet - riskFreeRate) / vol,
+    maxDrawdown,
+    hitRate,
+    informationRatio: ir,
+    meanPortfolioReturn: meanRet,
+    meanBenchmarkReturn: meanBench,
+    meanExcessReturn: meanExcess,
+  };
 }

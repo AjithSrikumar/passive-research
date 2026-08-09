@@ -13,6 +13,8 @@ import type { BacktestConstituentTuple, BacktestYearTuple } from "@/lib/factor/b
 interface Props {
   staticYears: BacktestYearTuple[];
   staticConstituents: BacktestConstituentTuple[];
+  /** Live FY26 top-N (rank, ric, name, slug, composite) from the snapshot. */
+  liveTop: { rank: number; ric: string; name: string; slug: string | null; composite: number }[];
 }
 
 interface ApiResponse {
@@ -28,38 +30,45 @@ const BLOCKS: { key: Block; label: string }[] = [
   { key: "momentum", label: "Momentum" },
 ];
 
-const MIN_N_OPTIONS = [50, 75, 100, 125, 150];
+const MIN_N_OPTIONS = [2, 10, 25, 50, 100];
+const MIN_FACTORS_OPTIONS = [1, 2, 3, 4];
 const TOP_N_OPTIONS = [10, 15, 20, 25, 30];
 
 const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 const pctCls = (v: number) => (v > 0 ? "positive" : v < 0 ? "negative" : "");
 
-/** Rebuild the static snapshot (optimized defaults) as engine-shaped results. */
+/** Rebuild the static snapshot (GQVM recommended defaults) as engine-shaped results. */
 function staticResults(years: BacktestYearTuple[], constituents: BacktestConstituentTuple[]): YearResult[] {
   const byYear = new Map<number, BacktestConstituentTuple[]>();
   for (const c of constituents) {
     if (!byYear.has(c[0])) byYear.set(c[0], []);
     byYear.get(c[0])!.push(c);
   }
-  return years.map((y) => ({
-    fiscalYear: y[0],
-    nEligible: y[1],
-    portfolioReturn: y[2] ?? 0,
-    benchmarkReturn: y[3] ?? 0,
-    excessReturn: y[4] ?? 0,
-    ic: y[5],
-    constituents: (byYear.get(y[0]) ?? []).map((c) => ({
-      rank: c[1],
-      ric: c[2],
-      name: c[4],
-      slug: c[5],
-      returnPct: c[3],
-      composite: 0,
-    })),
-  }));
+  let nav = 100;
+  return years.map((y) => {
+    const portfolioReturn = y[2] ?? 0;
+    nav *= 1 + portfolioReturn;
+    return {
+      fiscalYear: y[0],
+      nEligible: y[1],
+      portfolioReturn,
+      benchmarkReturn: y[3] ?? 0,
+      excessReturn: y[4] ?? 0,
+      ic: y[5],
+      nav,
+      constituents: (byYear.get(y[0]) ?? []).map((c) => ({
+        rank: c[1],
+        ric: c[2],
+        name: c[4],
+        slug: c[5],
+        returnPct: c[3],
+        composite: 0,
+      })),
+    };
+  });
 }
 
-export default function FactorBacktestRunner({ staticYears, staticConstituents }: Props) {
+export default function FactorBacktestRunner({ staticYears, staticConstituents, liveTop }: Props) {
   const [blockWeights, setBlockWeights] = useState<Record<Block, number>>(() => ({
     growth: DEFAULT_BACKTEST_PARAMS.blockWeights.growth * 100,
     quality: DEFAULT_BACKTEST_PARAMS.blockWeights.quality * 100,
@@ -72,6 +81,7 @@ export default function FactorBacktestRunner({ staticYears, staticConstituents }
     return out;
   });
   const [minN, setMinN] = useState(DEFAULT_BACKTEST_PARAMS.minN);
+  const [minFactors, setMinFactors] = useState(DEFAULT_BACKTEST_PARAMS.minFactors);
   const [topN, setTopN] = useState(DEFAULT_BACKTEST_PARAMS.topN);
 
   const [status, setStatus] = useState<"static" | "loading" | "live" | "error">("static");
@@ -115,6 +125,7 @@ export default function FactorBacktestRunner({ staticYears, staticConstituents }
           },
           metricWeights: Object.fromEntries(FACTOR_METRICS.map((m) => [m.key, metricOn[m.key] ? 1 : 0])),
           minN,
+          minFactors,
           topN,
         }),
       });
@@ -143,6 +154,7 @@ export default function FactorBacktestRunner({ staticYears, staticConstituents }
     for (const m of FACTOR_METRICS) on[m.key] = (DEFAULT_BACKTEST_PARAMS.metricWeights[m.key] ?? 0) > 0;
     setMetricOn(on);
     setMinN(DEFAULT_BACKTEST_PARAMS.minN);
+    setMinFactors(DEFAULT_BACKTEST_PARAMS.minFactors);
     setTopN(DEFAULT_BACKTEST_PARAMS.topN);
     setLive(null);
     setStatus("static");
@@ -200,6 +212,14 @@ export default function FactorBacktestRunner({ staticYears, staticConstituents }
               </select>
             </label>
             <label className="bt-slider-row bt-slider-row-narrow">
+              <span className="bt-slider-label">MinFactors</span>
+              <select className="filter-select" value={minFactors} onChange={(e) => setMinFactors(Number(e.target.value))}>
+                {MIN_FACTORS_OPTIONS.map((v) => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
+            </label>
+            <label className="bt-slider-row bt-slider-row-narrow">
               <span className="bt-slider-label">Top-N</span>
               <select className="filter-select" value={topN} onChange={(e) => setTopN(Number(e.target.value))}>
                 {TOP_N_OPTIONS.map((v) => (
@@ -220,7 +240,7 @@ export default function FactorBacktestRunner({ staticYears, staticConstituents }
       {error && <p className="bt-error">{error}</p>}
       {status === "error" && !live && (
         <p className="bt-note">
-          Showing the static snapshot (optimized defaults). The live backtest needs the database;
+          Showing the static snapshot (GQVM recommended parameters). The live backtest needs the database;
           this is expected if the deployed site has no DATABASE_URL.
         </p>
       )}
@@ -231,7 +251,7 @@ export default function FactorBacktestRunner({ staticYears, staticConstituents }
       <div className="sort-row" style={{ marginTop: 24 }}>
         <span>
           <b>{yearRows.length}</b> backtested years · FY{years[0] + 2000} → FY{years[years.length - 1] + 2000} ·{" "}
-          {status === "live" ? "custom parameters" : "optimized default parameters"} · IC is Spearman
+          {status === "live" ? "custom parameters" : "GQVM recommended parameters"} · IC is Spearman
           rank correlation between composite score and next-year return (N ≥ 30)
         </span>
       </div>
@@ -332,6 +352,50 @@ export default function FactorBacktestRunner({ staticYears, staticConstituents }
           </div>
         </div>
       )}
+
+      <div className="backtest-year">
+        <h2 className="backtest-year-title">
+          Live FY2026 portfolio — top {liveTop.length}{" "}
+          <span className="bt-live-badge">current</span>
+        </h2>
+        <p className="bt-note">
+          The live portfolio for the year ending 30-Jun-2026: the top-20 by GQVM
+          composite score in the FY2026 ranking (no forward return yet — the
+          return will be realized at the FY2027 rebalance).
+        </p>
+        <div className="coverage-table-wrap">
+          <table className="coverage-table backtest-constituents">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Company</th>
+                <th>Composite</th>
+              </tr>
+            </thead>
+            <tbody>
+              {liveTop.map((c) => (
+                <tr key={c.ric}>
+                  <td className="num">{c.rank}</td>
+                  <td>
+                    {c.slug ? (
+                      <Link href={`/company/${c.slug}`} className="co-name">
+                        {c.name}
+                        <span className="co-ticker">{c.ric}</span>
+                      </Link>
+                    ) : (
+                      <span className="co-name">
+                        {c.name}
+                        <span className="co-ticker">{c.ric}</span>
+                      </span>
+                    )}
+                  </td>
+                  <td className="num">{c.composite.toFixed(4)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

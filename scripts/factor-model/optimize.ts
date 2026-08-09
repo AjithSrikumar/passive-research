@@ -1,28 +1,33 @@
-// Grid-search optimizer for the factor backtest.
-// Finds the parameter set (block weights, per-metric inclusion, MinN, TopN)
-// that maximizes the mean portfolio return of the Top-N factor backtest
-// over FY13..FY25, then writes the winning defaults to
-// src/lib/factor/params.ts (used by import.ts to seed the backtest tables
-// and by the /backtest page as initial control values).
+// Grid-search optimizer for the GQVM factor backtest.
+//
+// Runs an exploratory search (block weights, per-metric inclusion, MinN,
+// TopN) over the GQVM universe and reports the best configuration found.
+// The written defaults stay pinned to the dashboard's recommended GQVM
+// configuration (Parameters tab) — the /backtest page and import.ts depend
+// on those exact defaults, and the import's validation gates guarantee
+// parity with the dashboard.
 //
 // Run: npx tsx scripts/factor-model/optimize.ts
 // Source: workbook only (no DB required).
-//
-// Search stages (percentile cache makes each run ~2ms):
-//   1. block weights (0..1 step .25, momentum = remainder) with model metric defaults
-//   2. per-block metric inclusion (default / uniform / single / leave-one-out)
-//   3. MinN x TopN grid with the best weights
-//   4. block weights re-searched with the best metric set, MinN and TopN
 
 import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { FISCAL_YEARS, METRICS, type Block } from "./config";
-import { loadWorkbook, loadCompanies, loadMetricSheet, loadMembership, cellValue } from "./workbook";
+import {
+  FISCAL_YEARS,
+  METRICS,
+  MIN_CROSS_SECTION,
+  MIN_FACTORS,
+  TOP_N,
+  RISK_FREE_RATE,
+  type Block,
+} from "./config";
+import { loadWorkbook, loadCompanies, loadMetricSheet, loadUniverse, loadBenchmark, cellValue } from "./workbook";
 import { buildRicSlugMap } from "./map-names";
 import {
   buildPercentileCache,
+  computeStats,
   meanPortfolioReturn,
   runFactorBacktest,
   type BacktestParams,
@@ -34,7 +39,9 @@ import {
 const __dir = dirname(fileURLToPath(import.meta.url));
 
 const BLOCKS: Block[] = ["growth", "quality", "valuation", "momentum"];
-const MODEL_BLOCK_WEIGHTS: Record<Block, number> = { growth: 0.3, quality: 0.3, valuation: 0.3, momentum: 0.1 };
+
+/** GQVM recommended configuration (source of truth for written defaults). */
+const MODEL_BLOCK_WEIGHTS: Record<Block, number> = { growth: 0.2, quality: 0.1, valuation: 0.6, momentum: 0.1 };
 
 interface OptResult {
   params: BacktestParams;
@@ -51,10 +58,10 @@ async function main() {
     key: m.key,
     block: m.block,
     higherIsBetter: m.higherIsBetter,
-    weightInBlock: m.weightInBlock,
+    weightInBlock: 1,
   }));
 
-  // ---- FactorData from the workbook ----
+  // ---- FactorData from the workbook (same pipeline as import.ts) ----
   const values = new Map<string, number>();
   for (const def of METRICS) {
     if (def.key === "momentum_1y") continue;
@@ -68,9 +75,22 @@ async function main() {
     if (!ricSet.has(r.ric)) continue;
     for (const [fy, v] of r.values) closes.set(`${r.ric}|${fy}`, v);
   }
+  const universe = loadUniverse(wb, ricSet);
   const membership = new Map<string, boolean>();
-  for (const r of loadMembership(wb.getWorksheet("Nifty500_Membership")!)) {
-    for (const [fy, isMember] of r.years) membership.set(`${r.ric}|${fy}`, isMember);
+  for (const fy of FISCAL_YEARS) {
+    for (const c of companies) membership.set(`${c.ric}|${fy}`, false);
+    const members = universe.get(fy) ?? [];
+    for (const m of members) membership.set(`${m.ric}|${fy}`, true);
+  }
+
+  const benchmarkCloses = loadBenchmark(wb.getWorksheet("Benchmark_Nifty50")!);
+  const benchmark = new Map<number, number>();
+  for (let i = 1; i < FISCAL_YEARS.length; i++) {
+    const fy = FISCAL_YEARS[i];
+    if (fy > 25) break;
+    const cur = benchmarkCloses.get(fy + 2001);
+    const prev = benchmarkCloses.get(fy + 2000);
+    if (cur !== undefined && prev !== undefined && prev !== 0) benchmark.set(fy, cur / prev - 1);
   }
 
   const coverage = wb.getWorksheet("Coverage_Map")!;
@@ -86,13 +106,15 @@ async function main() {
   const names = new Map<string, { name: string; slug: string | null }>();
   for (const c of companies) names.set(c.ric, { name: c.name, slug: byRic.get(c.ric) ?? null });
 
+  const years = FISCAL_YEARS.filter((y) => y >= 13 && y <= 25);
   const data: FactorData = {
-    years: [...FISCAL_YEARS].slice(1, -1), // FY13..FY25 (FY12 excluded; FY26 has no exit close)
+    years: [...years],
     metrics,
     values,
     membership,
     closes,
     names,
+    benchmark,
   };
   console.log(`optimizer: years FY${data.years[0]}..FY${data.years[data.years.length - 1]}, ` +
     `companies ${names.size}, metrics ${metrics.length}`);
@@ -100,19 +122,18 @@ async function main() {
   // ---- parameter generators ----
   const metricWeights = (on: Set<string>): Record<string, number> => {
     const out: Record<string, number> = {};
-    for (const m of metrics) out[m.key] = on.has(m.key) ? m.weightInBlock : 0;
+    for (const m of metrics) out[m.key] = on.has(m.key) ? 1 : 0;
     return out;
   };
   const blockMetricOptions = (block: Block): Record<string, number>[] => {
     const inBlock = metrics.filter((m) => m.block === block);
     const all = inBlock.map((m) => m.key);
     if (all.length === 1) {
-      // single-metric block: only on/off matters
       return [metricWeights(new Set(all)), { [all[0]]: 0 }];
     }
     const opts: Record<string, number>[] = [];
     const allDefault = metricWeights(new Set(all));
-    opts.push(allDefault); // model defaults (equal weights within a block)
+    opts.push(allDefault);
     for (const k of all) {
       const single: Record<string, number> = {};
       for (const k2 of all) single[k2] = k2 === k ? 1 : 0;
@@ -135,16 +156,24 @@ async function main() {
           valuation: v / 4,
           momentum: sum === 4 ? 0 : (4 - sum) / 4,
         };
-        if (bw.growth === 0 && bw.quality === 0 && bw.valuation === 0) continue; // useless
+        if (bw.growth === 0 && bw.quality === 0 && bw.valuation === 0) continue;
         blockWeightCandidates.push(bw);
       }
     }
   }
-  blockWeightCandidates.push(MODEL_BLOCK_WEIGHTS); // always try the model default
+  blockWeightCandidates.push(MODEL_BLOCK_WEIGHTS);
 
   const defaultMetricWeights = metricWeights(new Set(metrics.map((m) => m.key)));
 
-  // ---- stage 1: block weights with model metric defaults (minN 100, topN 20) ----
+  const base: BacktestParams = {
+    blockWeights: MODEL_BLOCK_WEIGHTS,
+    metricWeights: defaultMetricWeights,
+    minN: MIN_CROSS_SECTION,
+    minFactors: MIN_FACTORS,
+    topN: TOP_N,
+  };
+
+  // ---- stage 1: block weights with model metric defaults ----
   let best: OptResult | null = null;
   const evaluate = (params: BacktestParams, cache: PercentileCache) => {
     const results = runFactorBacktest(data, params, cache);
@@ -157,9 +186,9 @@ async function main() {
     return mean;
   };
 
-  const cache100 = buildPercentileCache(data, 100);
+  const cacheMinN = buildPercentileCache(data, MIN_CROSS_SECTION);
   for (const bw of blockWeightCandidates) {
-    evaluate({ blockWeights: bw, metricWeights: defaultMetricWeights, minN: 100, topN: 20 }, cache100);
+    evaluate({ ...base, blockWeights: bw }, cacheMinN);
   }
   console.log(`stage 1 (block weights): best mean ${(best!.mean * 100).toFixed(2)}%`);
 
@@ -176,17 +205,12 @@ async function main() {
         for (const m of momentumOpts) {
           nStage2++;
           const merged = { ...g, ...q, ...v, ...m };
-          const results = runFactorBacktest(data, {
-            blockWeights: best!.params.blockWeights,
-            metricWeights: merged,
-            minN: 100,
-            topN: 20,
-          }, cache100);
+          const results = runFactorBacktest(data, { ...base, metricWeights: merged }, cacheMinN);
           const mean = meanPortfolioReturn(results);
           if (!stage2Best || mean > stage2Best.mean) {
             const bench = results.reduce((s, r) => s + r.benchmarkReturn, 0) / results.length;
             const excess = results.reduce((s, r) => s + r.excessReturn, 0) / results.length;
-            stage2Best = { params: { blockWeights: best!.params.blockWeights, metricWeights: merged, minN: 100, topN: 20 }, mean, meanBenchmark: bench, meanExcess: excess };
+            stage2Best = { params: { ...base, metricWeights: merged }, mean, meanBenchmark: bench, meanExcess: excess };
           }
         }
       }
@@ -197,7 +221,7 @@ async function main() {
 
   // ---- stage 3: MinN x TopN grid ----
   let stage3Best: OptResult | null = null;
-  for (const minN of [50, 75, 100, 125, 150]) {
+  for (const minN of [2, 10, 25, 50, 100]) {
     const cache = buildPercentileCache(data, minN);
     for (const topN of [10, 15, 20, 25, 30]) {
       const results = runFactorBacktest(data, { ...best!.params, minN, topN }, cache);
@@ -226,7 +250,7 @@ async function main() {
   }
   console.log(`stage 4 (block weights, refined): best mean ${(best!.mean * 100).toFixed(2)}%`);
 
-  // ---- report + write defaults ----
+  // ---- report ----
   const p = best!.params;
   const fmtW = (x: number) => Number(x.toFixed(4));
   const selected: Record<string, string> = {};
@@ -235,21 +259,24 @@ async function main() {
       .map((m) => m.displayName);
     selected[b] = on.length === 0 ? "(none)" : on.join(", ");
   }
-  console.log("\n=== Optimized defaults ===");
+  console.log("\n=== Search best (informational; NOT written) ===");
   console.log(`block weights: G ${fmtW(p.blockWeights.growth)} Q ${fmtW(p.blockWeights.quality)} ` +
     `V ${fmtW(p.blockWeights.valuation)} M ${fmtW(p.blockWeights.momentum)}`);
-  console.log(`minN ${p.minN}, topN ${p.topN}`);
+  console.log(`minN ${p.minN}, minFactors ${p.minFactors}, topN ${p.topN}`);
   for (const b of BLOCKS) console.log(`  ${b}: ${selected[b]}`);
   console.log(`mean portfolio ${(best!.mean * 100).toFixed(2)}% | benchmark ${(best!.meanBenchmark * 100).toFixed(2)}% | ` +
     `excess ${(best!.meanExcess * 100).toFixed(2)}% (FY${data.years[0]}..FY${data.years[data.years.length - 1]})`);
 
+  // ---- write the pinned GQVM recommended config + its engine-computed stats ----
+  const stats = computeStats(runFactorBacktest(data, base, cacheMinN), RISK_FREE_RATE);
+
   const outPath = join(__dir, "../../src/lib/factor/params.ts");
   const lines: string[] = [];
   lines.push("// GENERATED by scripts/factor-model/optimize.ts - DO NOT EDIT.");
-  lines.push("// Default backtest parameters chosen to maximize the mean Top-N");
-  lines.push(`// portfolio return over FY${data.years[0]}..FY${data.years[data.years.length - 1]} (` +
-    `grid search, ${BLOCKS.join("/")} blocks, per-metric inclusion, MinN, TopN).`);
-  lines.push("// Regenerate after re-importing the workbook: npm run factor:optimize");
+  lines.push("// GQVM model configuration (source: GQVM Factor Dashboard.xlsx, Parameters");
+  lines.push("// tab — the dashboard's recommended configuration). Backtest signal years");
+  lines.push("// FY13..FY25; forward returns to FY26. Regenerate after re-importing the");
+  lines.push("// workbook: npm run factor:optimize");
   lines.push("");
   lines.push("import type { BacktestParams } from \"./engine\";");
   lines.push("");
@@ -262,27 +289,33 @@ async function main() {
   lines.push("");
   lines.push("export const DEFAULT_BACKTEST_PARAMS: BacktestParams = {");
   lines.push("  blockWeights: {");
-  lines.push(`    growth: ${fmtW(p.blockWeights.growth)},`);
-  lines.push(`    quality: ${fmtW(p.blockWeights.quality)},`);
-  lines.push(`    valuation: ${fmtW(p.blockWeights.valuation)},`);
-  lines.push(`    momentum: ${fmtW(p.blockWeights.momentum)},`);
+  for (const b of BLOCKS) lines.push(`    ${b}: ${fmtW(MODEL_BLOCK_WEIGHTS[b])},`);
   lines.push("  },");
   lines.push("  metricWeights: {");
-  for (const m of metrics) lines.push(`    ${JSON.stringify(m.key)}: ${fmtW(p.metricWeights[m.key] ?? 0)},`);
+  for (const m of metrics) lines.push(`    ${JSON.stringify(m.key)}: 1,`);
   lines.push("  },");
-  lines.push(`  minN: ${p.minN},`);
-  lines.push(`  topN: ${p.topN},`);
+  lines.push(`  minN: ${MIN_CROSS_SECTION},`);
+  lines.push(`  minFactors: ${MIN_FACTORS},`);
+  lines.push(`  topN: ${TOP_N},`);
   lines.push("};");
   lines.push("");
-  lines.push("/** Search result metadata (informational). */");
+  lines.push("/** GQVM recommended-configuration results (informational; in-sample FY13..FY25). */");
   lines.push("export const OPTIMIZER_SUMMARY = {");
   lines.push(`  years: "FY${data.years[0]}..FY${data.years[data.years.length - 1]}",`);
-  lines.push(`  meanPortfolioReturn: ${best!.mean},`);
-  lines.push(`  meanBenchmarkReturn: ${best!.meanBenchmark},`);
-  lines.push(`  meanExcessReturn: ${best!.meanExcess},`);
+  lines.push(`  meanPortfolioReturn: ${stats.meanPortfolioReturn},`);
+  lines.push(`  meanBenchmarkReturn: ${stats.meanBenchmarkReturn},`);
+  lines.push(`  meanExcessReturn: ${stats.meanExcessReturn},`);
+  lines.push(`  cagr: ${stats.cagr},`);
+  lines.push(`  vol: ${stats.vol},`);
+  lines.push(`  sharpe: ${stats.sharpe},`);
+  lines.push(`  maxDrawdown: ${stats.maxDrawdown},`);
+  lines.push(`  hitRate: ${stats.hitRate},`);
+  lines.push(`  informationRatio: ${stats.informationRatio},`);
+  lines.push(`  navFinal: ${stats.navFinal},`);
+  lines.push(`  riskFreeRate: ${RISK_FREE_RATE},`);
   lines.push("} as const;");
   writeFileSync(outPath, lines.join("\n"), "utf8");
-  console.log(`\nwrote ${outPath}`);
+  console.log(`\nwrote ${outPath} (pinned GQVM recommended config)`);
 }
 
 main().catch((e) => {

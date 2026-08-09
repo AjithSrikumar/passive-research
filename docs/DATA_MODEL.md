@@ -179,8 +179,9 @@ erDiagram
 The factor platform follows the site rule **pages never depend on the DB**
 (`docs/ARCHITECTURE.md`): `scripts/factor-model/snapshot.ts` reduces the
 mirror to build-time static modules `src/lib/factor/data.ts` (per-year
-ranked composites + block scores, FY12–FY26) and `src/lib/factor/backtest.ts`
-(backtest summary + constituents), which are the only things pages import.
+ranked composites + block scores, FY13–FY26; FY12 has prices only) and
+`src/lib/factor/backtest.ts` (backtest summary + constituents, FY13–FY25
+signal years), which are the only things pages import.
 
 | Route | Source |
 |---|---|

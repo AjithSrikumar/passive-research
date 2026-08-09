@@ -1,4 +1,4 @@
-import { METRICS, MIN_N, type Block, type MetricDef } from "./config";
+import { MIN_CROSS_SECTION, type Block } from "./config";
 
 export interface MetricRow {
   ric: string;
@@ -13,20 +13,18 @@ export interface ScoreContext {
 }
 
 /**
- * Percentile of `value` within `rows` in [0,1]: rank/(n-1) after sorting.
- * Higher-is-better and lower-is-better flip the ranking direction.
+ * GQVM percentile of `value` within `rows` in [0,1]:
+ *   p = COUNTIF(values < value) / (COUNT(values) - 1)
+ * where lower-is-better metrics (inverted) return 1 - p. Blanks are excluded
+ * from numerator and denominator. Undefined when fewer than two values.
  */
-export function percentile(rows: MetricRow[], value: number, higherIsBetter: boolean): number {
+export function percentile(rows: MetricRow[], value: number, higherIsBetter: boolean): number | undefined {
   const n = rows.length;
-  if (n === 0) return 0;
+  if (n < MIN_CROSS_SECTION) return undefined;
   let below = 0;
-  let equal = 0;
-  for (const r of rows) {
-    if (r.value < value) below++;
-    else if (r.value === value) equal++;
-  }
-  const rank = higherIsBetter ? below + equal / 2 : n - below - equal / 2;
-  return n === 1 ? 1 : rank / (n - 1);
+  for (const r of rows) if (r.value < value) below++;
+  const p = below / (n - 1);
+  return higherIsBetter ? p : 1 - p;
 }
 
 export interface BlockScoreResult {
@@ -36,45 +34,52 @@ export interface BlockScoreResult {
 }
 
 /**
- * Block score = weighted average of per-metric percentiles, renormalized
- * across the metrics that have values (missing metrics never count as 0).
- * A metric whose eligible cross-section < MIN_N is treated as missing.
+ * Block score = mean of the per-metric percentiles that have a value
+ * (missing metrics never contribute). A block with no valued metrics yields
+ * score 0 with nMetricsUsed 0 (treated as unavailable in the composite).
  */
 export function blockScore(
   ric: string,
   fiscalYear: number,
   block: Block,
+  metricDefs: { key: string; higherIsBetter: boolean }[],
   ctx: ScoreContext
 ): BlockScoreResult {
-  const defs: MetricDef[] = METRICS.filter((m) => m.block === block);
   const percentiles = new Map<string, number>();
-  let weighted = 0;
-  let weightSum = 0;
-  for (const def of defs) {
+  let sum = 0;
+  for (const def of metricDefs) {
     const value = ctx.value(ric, def.key, fiscalYear);
     if (value === undefined) continue;
     const rows = ctx.collect(def.key, fiscalYear);
-    if (rows.length < MIN_N) continue;
     const p = percentile(rows, value, def.higherIsBetter);
+    if (p === undefined) continue;
     percentiles.set(def.key, p);
-    weighted += def.weightInBlock * p;
-    weightSum += def.weightInBlock;
+    sum += p;
   }
-  if (weightSum === 0) return { score: 0, nMetricsUsed: 0, percentiles };
-  return { score: weighted / weightSum, nMetricsUsed: percentiles.size, percentiles };
+  return { score: percentiles.size === 0 ? 0 : sum / percentiles.size, nMetricsUsed: percentiles.size, percentiles };
 }
 
-/** Composite = 0.3·G + 0.3·Q + 0.3·V + 0.1·M (weights from METRICS config). */
-export function compositeScore(blocks: Record<Block, BlockScoreResult>): number {
-  return BLOCK_WEIGHTS.growth * blocks.growth.score
-    + BLOCK_WEIGHTS.quality * blocks.quality.score
-    + BLOCK_WEIGHTS.valuation * blocks.valuation.score
-    + BLOCK_WEIGHTS.momentum * blocks.momentum.score;
+/**
+ * GQVM composite = renormalized weighted mean of the available factor
+ * scores (weights 0.2/0.1/0.6/0.1). Rankable only when at least minFactors
+ * factor scores are present. Returns null when not rankable.
+ */
+export function compositeScore(
+  blocks: Record<Block, BlockScoreResult>,
+  weights: Record<Block, number>,
+  minFactors: number
+): number | null {
+  let weighted = 0;
+  let weightSum = 0;
+  let nAvailable = 0;
+  for (const block of ["growth", "quality", "valuation", "momentum"] as Block[]) {
+    const w = weights[block];
+    if (w <= 0) continue;
+    if (blocks[block].nMetricsUsed === 0) continue;
+    weighted += w * blocks[block].score;
+    weightSum += w;
+    nAvailable++;
+  }
+  if (nAvailable < minFactors || weightSum === 0) return null;
+  return weighted / weightSum;
 }
-
-const BLOCK_WEIGHTS: Record<Block, number> = {
-  growth: METRICS.find((m) => m.block === "growth")!.blockWeight,
-  quality: METRICS.find((m) => m.block === "quality")!.blockWeight,
-  valuation: METRICS.find((m) => m.block === "valuation")!.blockWeight,
-  momentum: METRICS.find((m) => m.block === "momentum")!.blockWeight,
-};
