@@ -32,17 +32,31 @@
       Nestlé, BEL, Adani Power, JSW Steel on verified data (live quotes
       2026-08-07); **33 of 133 reports are now bespoke** (Tata Motors row
       reflects the post-demerger TMPV entity).
+- [x] **Factor model platform (v0.10.0–v0.11.1)** — GQVM factor model over the
+      NSE-900 universe: import pipeline (`npm run factor:import`) with
+      dashboard-parity validation gates, Postgres factor schema, build-time
+      snapshots (`src/lib/factor/data.ts` + `backtest.ts`), `/screener`,
+      `/backtest` (parametric engine + `POST /api/factor/backtest` +
+      optimizer), per-company scorecards, **individual pages for all 900
+      companies** (901 SSG pages), NSE-symbol mapping + logos for 672
+      companies (`TickerLogo`), FY2026 GQVM score strips on researched
+      pages, "Latest Research" removed from the nav, Vitest suite (20 tests).
 - [ ] Editorial review pass of report language (M3).
 - [ ] First chart increment: financial history trend + margin bridge (H2
       partial).
 
 ## Next Sprint — Sprint 4
 
+- **Factor model enrichment** (H1/H4 follow-up): widen the factor universe
+  coverage (e.g. NSE-500 → all listed), add the remaining ~228 unmapped
+  company symbols/logos (delisted/renamed entities currently fall back to
+  initials), and surface more factor analytics (sector-level rankings, IC
+  history charts).
 - **Data enrichment design** (H1): enrich `Company` fields from sourced
   data, then re-seed the mirror (`npm run db:seed`); keep evidence labels
   honest.
-- **Test runner adoption** (H3): Vitest for `src/lib` + move the smoke
-  checklist into a script.
+- **Test runner adoption** (H3): extend Vitest to `src/lib/companies.ts` +
+  smoke-checklist script — partially done (factor layer covered).
 - **Sector page symmetry** (M4): `dynamicParams = false`.
 - **CSP/headers** (M1) + `npm audit` gate (M2).
 - **API hardening** (M6 follow-up): rate limiting at the edge if `/api/*`
@@ -83,4 +97,4 @@
 
 ---
 
-*Last updated: 2026-08-07 (Sprint 3 closed — 33 bespoke notes v0.7.0–v0.9.0)*
+*Last updated: 2026-08-09 (Sprint 3 closed — factor platform v0.10.0–v0.11.1: NSE-900 GQVM model, 901 company pages, logos)*

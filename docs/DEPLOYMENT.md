@@ -66,7 +66,7 @@ without it.
 ## 6. Deployment Checklist
 
 - [ ] `npm run lint` clean
-- [ ] `npm run build` clean, 172 pages (+ 3 dynamic API routes)
+- [ ] `npm run build` clean, 901 company pages (+ static + API routes)
 - [ ] Smoke test pass (`docs/TESTING.md` § 3)
 - [ ] `sitemap.xml` includes new companies/sectors if the universe changed
 - [ ] `metadataBase` matches the production origin

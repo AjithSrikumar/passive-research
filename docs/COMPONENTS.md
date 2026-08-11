@@ -1,6 +1,6 @@
 # COMPONENTS.md — UI Component Catalog
 
-> 15 components in `src/components/`. 6 are client (`"use client"`); 9 are
+> 20 components in `src/components/`. 8 are client (`"use client"`); 12 are
 > server components. All are presentational and data-accepting — none fetch
 > data. Update this file whenever a component or its props change.
 
@@ -23,6 +23,11 @@
 | `ReportNote` | server | Bespoke research-note renderer (ADR-012) |
 | `HeroPreview` | server | Home hero report-card illustration (desktop only) |
 | `LatestList` | server | Home "Recently Updated" grouped timeline list |
+| `FactorScreener` | client | NSE-900 screener (filters, sort, CSV export) |
+| `FactorBacktestRunner` | client | Parametric backtest UI + live FY2026 portfolio |
+| `FactorScorecard` | server | Per-company GQVM history (composite + 4 blocks + rank) |
+| `TickerLogo` | client | NSE-symbol logo with deterministic initials fallback |
+| `GqvmScoreStrip` | server | FY2026 G/Q/V/M + Total Score strip for researched pages |
 
 ---
 
@@ -138,6 +143,54 @@
 
 ### `Footer`
 - **Props:** none.
+
+---
+
+## Factor Components
+
+### `FactorScreener`
+- **Type:** client.
+- **Props:** none (static data from `src/lib/factor/data.ts`).
+- **Purpose:** Ranked table of the NSE-900 universe for a selected fiscal
+  year (default FY2026): year switcher, text search, sector + composite +
+  block filters, sortable columns, CSV export. Every row: `TickerLogo` +
+  name + NSE symbol + sector + composite/G/Q/V/M at 1 decimal, linking to
+  `/company/<slug>`.
+
+### `FactorBacktestRunner`
+- **Type:** client.
+- **Props:** none.
+- **Purpose:** `/backtest` UI: static snapshot results for FY2013–FY2025
+  (year dropdown, portfolio vs benchmark, IC, top-20 constituents with
+  logos) plus the **live FY2026 portfolio** panel (current top-20, no
+  realized return yet); custom parametric runs via `POST
+  /api/factor/backtest` (G/Q/V/M weight sliders, per-metric chips,
+  MinN/Top-N). Constituent + live tables show `TickerLogo` rows linking to
+  the company pages.
+
+### `FactorScorecard`
+- **Type:** server.
+- **Props:** `{ slug: string }`.
+- **Purpose:** The covered company's factor history from
+  `src/lib/factor/company.ts`: composite + G/Q/V/M + rank per fiscal year
+  (FY2013–FY2026), with the Top-20 realized return where applicable.
+
+### `TickerLogo`
+- **Type:** client (image fallback).
+- **Props:** `{ ticker: string; name: string; size?: number }`.
+- **Purpose:** Company logo for factor-universe rows: renders
+  `/logos/<TICKER>.png` (`next/image` + `unoptimized`); on load failure
+  swaps to a deterministic initials square (initials from `name`, color
+  hashed from a 10-color palette — stable across renders, no external
+  requests). `aria-hidden`.
+
+### `GqvmScoreStrip`
+- **Type:** server.
+- **Props:** `{ slug: string }`.
+- **Purpose:** FY2026 score strip at the top of researched company pages:
+  Growth/Quality/Valuation/Momentum tiles + a "Total Score" tile (all at 1
+  decimal), with a caption "FY2026 GQVM scores · rank X of Y in the
+  NSE-900 universe (screener)".
 
 ---
 

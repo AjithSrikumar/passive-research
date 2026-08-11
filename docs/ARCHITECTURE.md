@@ -18,10 +18,12 @@ on the DB (a missing/unreachable `DATABASE_URL` changes nothing rendered).
 flowchart LR
   A[src/lib/companies.ts<br/>133 companies] --> C[Report engine<br/>src/lib/report.ts]
   B[src/lib/sectors.ts<br/>23 sectors] --> C
+  F2[src/lib/factor/<br/>NSE-900 snapshots] --> P2[/company/[slug]<br/>901 pages/]
   C --> D[SSG pages<br/>src/app/**]
-  D --> E[Static HTML + JSON-LD<br/>172 pages]
+  D --> E[Static HTML + JSON-LD<br/>901 company + 23 sector + content]
   N[src/lib/notes/<br/>bespoke notes registry] --> P[ReportNote<br/>block renderer]
   P -.slug match.-> D
+  F2 -.factor pages.-> D
   A2[db/schema.sql<br/>Postgres mirror] --> F[src/lib/db.ts<br/>pg pool]
   F --> G[src/lib/store.ts<br/>hybrid loaders]
   G --> H[/api/health /api/companies<br/>/api/companies/[slug]/]

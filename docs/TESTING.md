@@ -19,7 +19,7 @@
 ## 1.1 Unit Tests (Vitest)
 
 ```bash
-npm test    # vitest run — tests/**, 18 tests (factor snapshot + lookup + engine)
+npm test    # vitest run — tests/**, 20 tests (factor snapshot + lookup + engine)
 ```
 
 - `vitest.config.mts` — `@` alias → `src/`, node environment, `tests/**`.
@@ -40,7 +40,7 @@ npm test    # vitest run — tests/**, 18 tests (factor snapshot + lookup + engi
 
 ```bash
 npm run lint    # ESLint (must be clean)
-npm run build   # compiles + type-checks + SSG (172 pages, must succeed)
+npm run build   # compiles + type-checks + SSG (901 company pages, must succeed)
 ```
 
 The build is the real gate: any `Company` row failing type/schema, any
@@ -107,7 +107,7 @@ fails here. Keep it green after every change.
 
 - [ ] `npm run lint` clean
 - [ ] `npm test` green
-- [ ] `npm run build` clean (176 static pages)
+- [ ] `npm run build` clean (901 company pages + static routes)
 - [ ] Section 3 pass on dev server
 - [ ] `docs/` updated for the change (see `OPENCODE.md` § Shutdown)
 - [ ] No secrets or absolute local paths in committed files

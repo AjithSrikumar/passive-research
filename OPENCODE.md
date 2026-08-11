@@ -9,35 +9,53 @@
 ---
 
 **Passive** — an institutional-grade equity research platform for Indian listed
-stocks. A Next.js 16 App Router site: 133 company report pages, 23 sector
-pages, and standard content pages. Pages are generated **at build time**
-(SSG) from TypeScript data modules (`src/lib`). Reports follow a fixed
-25-section institutional framework with evidence labels, driver-based
-forecasting, reverse-DCF valuation, scenarios, and monitorable risks. Since
-v0.6.0 a **Supabase Postgres mirror** + read-only JSON API (`/api/*`) serve
-the same dataset through hybrid loaders (DB-first, static fallback —
-ADR-011); the build and all pages remain fully static and DB-independent.
-Since v0.7.0 selected companies can carry a **bespoke research note**
-(`src/lib/notes/` + `ReportNote`, ADR-012) rendered instead of the generic
-framework when the slug matches — the generic 25-section reports remain
-untouched. Currently **33** reports are bespoke institutional redesigns on
-verified primary-source data (v0.7.0–v0.9.0).
+stocks. A Next.js 16 App Router site: **901 company pages** (133 researched
+reports + 768 GQVM factor-score pages), 23 sector pages, and standard content
+pages. Pages are generated **at build time** (SSG) from TypeScript data modules
+(`src/lib`). Reports follow a fixed 25-section institutional framework with
+evidence labels, driver-based forecasting, reverse-DCF valuation, scenarios,
+and monitorable risks. Since v0.6.0 a **Supabase Postgres mirror** + read-only
+JSON API (`/api/*`) serve the same dataset through hybrid loaders (DB-first,
+static fallback — ADR-011); the build and all pages remain fully static and
+DB-independent. Since v0.7.0 selected companies can carry a **bespoke research
+note** (`src/lib/notes/` + `ReportNote`, ADR-012) rendered instead of the
+generic framework when the slug matches — the generic 25-section reports remain
+untouched; **33** reports are bespoke institutional redesigns on verified
+primary-source data (v0.7.0–v0.9.0). Since v0.10.0 a **GQVM factor platform**
+(NSE-900 universe, FY13–FY26, dashboard-parity validated) powers the screener,
+backtest, per-company scorecards and factor pages for all 900 companies
+(v0.10.0–v0.11.1).
 
 ## Current Project Status
 
-- **Version:** 0.9.0 (see `docs/CHANGELOG.md`)
-- **Build state:** GREEN — `npm run build` passes, 174 static pages + 3
-  dynamic API routes; `npm run lint` passes clean. Build works with **no**
+- **Version:** 0.11.1 (see `docs/CHANGELOG.md`)
+- **Build state:** GREEN — `npm run build` passes (**901 `/company/[slug]`
+  SSG pages** + 23 sector + static content/API routes); `npm run lint` passes
+  clean; `npm run test` (Vitest) **20/20 green**. Build works with **no**
   `DATABASE_URL` (pages never read the DB).
 - **Deployment:** LIVE — Vercel auto-deploys from the `main` branch
   (`https://passive-research.vercel.app`); domain `passive-research.in` is the
   canonical origin (see `docs/DEPLOYMENT.md`).
 - **Database:** Supabase Postgres connected (ADR-011) — schema
-  `db/schema.sql`, seeded via `npm run db:seed`
-  (`{ sectors: 23, companies: 133, report_sections: 3325 }`), accessed
-  server-only through `src/lib/db.ts` + `src/lib/store.ts`. `.env.local`
-  holds `DATABASE_URL` (gitignored); Vercel env must be set in the dashboard
-  for production API reads to hit the DB.
+  `db/schema.sql` (`{ sectors: 23, companies: 133, report_sections: 3325 }`)
+  + factor schema `db/factor_model.sql` (`factor_companies` 900 · values ·
+  scores · composites · backtest · benchmark, applied via
+  `npm run factor:import`), accessed server-only through `src/lib/db.ts` +
+  `src/lib/store.ts`. `.env.local` holds `DATABASE_URL` (gitignored); Vercel
+  env must be set in the dashboard for production API reads to hit the DB.
+- **Factor platform (v0.11.1):** GQVM model v2.0 (G 0.2 / Q 0.1 / V 0.6 /
+  M 0.1) validated 1:1 against `GQVM Factor Dashboard.xlsx` (repo root, **not
+  committed**) — composites 5,656/5,656 ranks, NAV 873.33, CAGR 18.14%,
+  Sharpe 0.622. Every NSE-900 company has its own page
+  (`/company/<slug>`, 901 SSG, `dynamicParams=false`); researched pages get a
+  top **GQVM score strip** (G/Q/V/M + Total at 1 decimal). NSE symbols mapped
+  for **672/900** (`factor_companies.nse_symbol` via
+  `scripts/factor-model/map-symbols.ts`) and logos committed to
+  `public/logos/` (672 PNGs from Dhan's CDN via `fetch-logos.ts`); the
+  residual 228 are delisted/renamed names that render a deterministic
+  initials fallback (`TickerLogo`). Screener + backtest tables show
+  logo + symbol and link every row to its company page. "Latest Research"
+  removed from the nav (page, footer link and hero CTA kept).
 - **Content state:** The institutional upgrade (executive summary, thesis map,
   reverse-DCF, scenarios, risk/catalyst registers, evidence labels) is complete
   for all 133 companies. **33 bespoke institution-grade notes** on verified
@@ -49,8 +67,7 @@ verified primary-source data (v0.7.0–v0.9.0).
   Ports, Coal India, Bajaj Finserv, Bajaj Auto, Siemens India, Nestlé, BEL,
   Adani Power, JSW Steel — see `src/lib/notes/index.ts`. Note: Tata Motors'
   row reflects the post-demerger TMPV listed entity; Siemens' FY26 is an
-  18-month period.
-  Methodology page rewritten per the manual. Company
+  18-month period. Methodology page rewritten per the manual. Company
   logos (real brand images from `public/logos/`) replace the initials-only
   squares (v0.4.0).
 - **UI state:** Dark mode is the default (v0.5.3) — `beforeInteractive`
@@ -62,18 +79,20 @@ verified primary-source data (v0.7.0–v0.9.0).
   design tokens/audit (`docs/UI_AUDIT.md` + `docs/STYLING.md`).
 - **Docs state:** Full documentation system in `docs/` (ARCHITECTURE,
   DECISIONS, TASKS, CHANGELOG, ROADMAP, DATABASE, API, COMPONENTS, STYLING,
-  TESTING, DEPLOYMENT, SECURITY, UI_AUDIT) + `OPENCODE.md` + rewritten
-  `README.md`.
+  TESTING, DEPLOYMENT, SECURITY, UI_AUDIT, FACTOR_MODEL, DATA_MODEL) +
+  `OPENCODE.md` + rewritten `README.md`.
 
 ---
 
 ## Active Objectives
 
 1. Keep the repo the single source of truth — docs synchronized with code.
-2. Enrich data quality (real vs synthetic financials) — top roadmap item.
-3. Add charts (SVG) per the institutional manual's chart standards.
-4. Strict security headers + CSP; `npm audit` gate.
-5. Optional: coverage-universe JSON API / full static export.
+2. Factor platform enrichment: widen universe coverage, close the 228-name
+   symbol gap, sector-level rankings / IC-history charts.
+3. Enrich data quality (real vs synthetic financials) — top roadmap item.
+4. Add charts (SVG) per the institutional manual's chart standards.
+5. Strict security headers + CSP; `npm audit` gate.
+6. Optional: coverage-universe JSON API / full static export.
 
 See `docs/ROADMAP.md` for sprint details and `docs/TASKS.md` for the queue.
 
@@ -82,9 +101,11 @@ See `docs/ROADMAP.md` for sprint details and `docs/TASKS.md` for the queue.
 ## Current Sprint
 
 **(Sprint 3, in progress) — Institutional content + docs system.**
-The institutional upgrade is done; documentation is done. Remaining sprint-3
-work is small: content review pass over report language, add charts (first
-increments), and any fix-ups found in review.
+The institutional upgrade is done; documentation is done; the factor platform
+(v0.10.0–v0.11.1: NSE-900 GQVM model, screener/backtest, 901 company pages,
+logos) is shipped. Remaining sprint-3 work is small: content review pass over
+report language, add charts (first increments), and any fix-ups found in
+review.
 
 ---
 
@@ -154,7 +175,7 @@ public/            Static assets
 ## Component Patterns
 
 - Server components render data; client components add the bare minimum of
-  interactivity. Only 6 components are `"use client"`.
+  interactivity. Only 8 components are `"use client"`.
 - Components accept data (a `Company`/`Sector` object) and never fetch.
 - Links via `next/link`. Icons are inline SVG strokes. Company logos are
   real images from `public/logos/<TICKER>.png` (Dhan-sourced, committed);
@@ -216,24 +237,29 @@ public/            Static assets
   page. **Exception (v0.7.0+):** the 33 bespoke companies have rows and notes
   using verified primary-source figures; estimates in the notes remain marked
   `(E)`.
-- No test runner; manual smoke only up to now (checked in `docs/TESTING.md`).
+- Factor symbols/logos: 228 of 900 NSE-900 names are unmapped
+  (`factor_companies.nse_symbol IS NULL`) — delisted/renamed entities whose
+  rows render the initials fallback in tables (acceptable by design).
+- Vitest covers the factor layer (20 tests); `src/lib/companies.ts` and the
+  smoke checklist are not yet scripted (checked in `docs/TESTING.md`).
 - `sectors/[slug]` route does not set `dynamicParams=false` (that's fine —
   unknown slugs → 404 via `getSector` guard).
 - Brand phrasing/English copy may need a final editorial pass (Sprint 1
   hardening).
 - No charts yet (planned); no CSP (planned).
 - DB mirror must be re-seeded (`npm run db:seed`) after any data change in
-  `companies.ts`/`sectors.ts` — the TS modules remain the source of truth;
-  the mirror is a snapshot.
+  `companies.ts`/`sectors.ts`; the factor tables need `npm run factor:import`
+  after workbook changes — the TS modules remain the source of truth for
+  pages; the mirror is a snapshot.
 - Vercel production needs `DATABASE_URL` set in the project env for the API
   to read the DB (falls back to static data without it).
 
 ## Recently Completed Features
 
-See `docs/CHANGELOG.md` v0.1.0–v0.3.0 and `docs/DECISIONS.md`. Highlights:
+See `docs/CHANGELOG.md` v0.1.0–v0.11.1 and `docs/DECISIONS.md`. Highlights:
 
 - Docify → Next.js full conversion (ADR-001, deleted legacy files).
-- 133-company + 23-sector data model, report engine, 172-page static build.
+- 133-company + 23-sector data model, report engine, static build.
 - Institutional upgrade: executive summary decision film, thesis map, reverse
   DCF, scenario cards, risk/catalyst registers, evidence labels (ADR-006).
 - **Bespoke research notes (v0.7.0-v0.9.0, ADR-012)**: Trent, HDFC Bank,
@@ -247,14 +273,22 @@ See `docs/CHANGELOG.md` v0.1.0–v0.3.0 and `docs/DECISIONS.md`. Highlights:
   register, downloadable sources) on verified primary-source data; responsive
   stacked table cards, print rules, byline/evidence-legend/AI wording removed
   for bespoke companies.
+- **GQVM factor platform (v0.10.0–v0.11.1)**: NSE-900 model (FY13–FY26)
+  imported from `GQVM Factor Dashboard.xlsx` with dashboard-parity validation
+  gates; `/screener` + `/backtest` + per-company scorecards; parametric
+  backtest engine (`POST /api/factor/backtest`) + exploration-only optimizer;
+  **individual pages for all 900 companies** (901 SSG), FY2026 GQVM score
+  strips at 1 decimal on researched pages; NSE-symbol mapping (672/900) +
+  Dhan-CDN logos (672 PNGs in `public/logos/`) with initials fallback;
+  "Latest Research" removed from the nav; Vitest suite (20 tests).
 - Methodology page rewrite per the Institutional Research Manual.
 - Performance/SEO: sitemap, robots, metadataBase, JSON-LD, dark mode.
 - Documentation system (this sprint, v0.3.0).
 
 ## Pending Refactors
 
-- Add test runner (Vitest) and smoke-test automation (see ADR proposal in
-  `docs/DECISIONS.md` backlog thoughts).
+- Extend Vitest to `src/lib/companies.ts` and script the smoke checklist
+  (see ADR proposal in `docs/DECISIONS.md` backlog thoughts).
 - Possibly component-first: extract scenario cards / risk tables behind
   presentational components if they exceed readability.
 - Normalize the "evidence tag" (`[E]`) spans into a dedicated component if
@@ -266,10 +300,11 @@ See `docs/TASKS.md` for the full queue.
 ## Current Priorities
 
 1. Keep the repo the single source of truth — docs synchronized with the
-   new hybrid DB layer.
-2. Data enrichment pipeline (real companies data → typed JSON → re-seed).
-3. Chart library (manual-driven) for history + bridges.
-4. Security headers + CSP + `npm audit` gate.
+   new hybrid DB + factor layer.
+2. Factor platform enrichment (universe coverage, symbol gap, sector views).
+3. Data enrichment pipeline (real companies data → typed JSON → re-seed).
+4. Chart library (manual-driven) for history + bridges.
+5. Security headers + CSP + `npm audit` gate.
 
 ## Coding Workflow
 
@@ -354,4 +389,4 @@ change. If any of the above is missed, the task is **not fixed**.
 
 ---
 
-*Last updated: 2026-08-07 (v0.9.0 — bespoke notes ×27, ADR-012 extension)*
+*Last updated: 2026-08-09 (v0.11.1 — company pages for all 900, logos, nav cleanup)*

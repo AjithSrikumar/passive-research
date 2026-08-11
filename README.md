@@ -1,14 +1,15 @@
 # Passive — Professional Equity Research for Indian Stocks
 
-An institutional-grade equity research platform covering **133 Indian listed
-companies across 23 sectors**. Every company gets a structured, 25-section
-research report built to a standard an institutional portfolio manager can act
-on: decision-first executive summary, driver-based forecasts, DCF + peer
-valuation with explicit "what is priced in" analysis, bull/base/bear scenarios,
-a monitorable risk register, and dated catalysts. Companies that warrant a
-deeper treatment get a **fully bespoke initiation-style note** instead of the
-generic framework — the Trent report (v0.7.0) is the first, built on verified
-primary-source data (ADR-012).
+An institutional-grade equity research platform covering **901 Indian listed
+companies** (133 with full research reports across 23 sectors, plus 768
+GQVM factor-score pages over the NSE-900 universe). Every covered company
+gets a structured, 25-section research report built to a standard an
+institutional portfolio manager can act on: decision-first executive
+summary, driver-based forecasts, DCF + peer valuation with explicit "what is
+priced in" analysis, bull/base/bear scenarios, a monitorable risk register,
+and dated catalysts. Companies that warrant a deeper treatment get a
+**fully bespoke initiation-style note** instead of the generic framework —
+33 reports are bespoke on verified primary-source data (ADR-012, v0.7.0–v0.9.0).
 
 > **Repository is the source of truth.** Architecture, decisions, tasks, and
 > conventions live in the Markdown docs. Start with
@@ -21,26 +22,29 @@ primary-source data (ADR-012).
   institutional framework.
 - **Bespoke research notes** (ADR-012) — a typed note layer
   (`src/lib/notes/` + `ReportNote`) that replaces the generic framework for
-  registered slugs; currently **Trent**, rewritten as an initiation-style note
-  on verified primary-source data (real fiscal years, shareholding pattern,
+  registered slugs; currently **33** institutional-grade notes (Trent, HDFC
+  Bank, Reliance, Titan, DMart, Airtel, and the top-27-by-market-cap set) on
+  verified primary-source data (real fiscal years, shareholding pattern,
   consensus-anchored valuation, downloadable sources, responsive tables).
 - **23 sector pages** with coverage counts, descriptions, and icon sets.
 - **Ratings** — Strong Buy / Buy / Accumulate / Hold / Reduce / Sell, each with
   an expected 12-month total-return band.
 - **Search & browse** — live client-side search, filter/sort research browser,
   sector and coverage-universe indexes.
-- **Factor model platform** (v0.10.1) — a four-factor model (growth 30%,
-  quality 30%, valuation 30%, momentum 10%) over the NSE-900 universe,
-  FY12–FY26, imported from `Factor-Dashboard-v4_Unbiased.xlsx` via
-  `npm run factor:import` (spec: `docs/FACTOR_MODEL.md`). Public surfaces: a
-  **`/screener`** (rank every company, filters, sort, CSV export), a
-  **`/backtest`** (parametric: adjust factor weights, per-metric
-  parameters, MinN and Top-N and run your own backtest — defaults
-  optimized via `npm run factor:optimize` for the highest mean portfolio
-  return; year dropdown per portfolio, FY13–FY25), and per-company
-  **factor scorecards** on every report page. Data flows workbook →
-  Postgres mirror → build-time static snapshot (`src/lib/factor/`) → SSG
-  pages, with the live backtest API (`POST /api/factor/backtest`) reading
+- **Factor model platform** (v0.11.x, GQVM v2.0) — a four-factor model
+  (growth 20%, quality 10%, valuation 60%, momentum 10%) over the NSE-900
+  universe, FY13–FY26, imported from `GQVM Factor Dashboard.xlsx` (not
+  committed) via `npm run factor:import` with dashboard-parity validation
+  gates (spec: `docs/FACTOR_MODEL.md`). Public surfaces: a **`/screener`**
+  (rank all 900 companies, filters, sort, CSV export), a **`/backtest`**
+  (parametric: adjust factor weights, per-metric parameters, MinN and Top-N
+  and run your own backtest — defaults pinned to the dashboard's GQVM
+  config; year dropdown per portfolio, FY13–FY25, plus the **live FY2026
+  portfolio**), **individual pages for all 900 companies** with GQVM
+  score strips at 1 decimal, and **logos for 672 companies** (NSE symbols
+  mapped from the workbook RIC codes). Data flows workbook → Postgres
+  mirror → build-time static snapshot (`src/lib/factor/`) → SSG pages,
+  with the live backtest API (`POST /api/factor/backtest`) reading
   the mirror on demand.
 - **Institutional methodology** — a documented evidence-classification system
   (Fact / Management / Consensus / Estimate / Inference / Scenario /
@@ -56,7 +60,7 @@ primary-source data (ADR-012).
 | Layer | Choice | Notes |
 |---|---|---|
 | Framework | **Next.js 16.3.0** (App Router, Turbopack) | Breaking-change discipline: see the generated `AGENTS.md` block; Next 16 docs ship in `node_modules/next/dist/docs/` |
-| UI | **React 19.2.8** | Server components by default; 6 client components |
+| UI | **React 19.2.8** | Server components by default; 8 client components |
 | Language | **TypeScript 5** | strict project config |
 | Styling | **Custom CSS** (CSS custom properties) | No Tailwind, no CSS-in-JS, single `src/app/globals.css` |
 | Fonts | **DM Sans** via `next/font/google` | `--font-dm-sans`, `display: swap` |
@@ -83,10 +87,14 @@ development; agents must re-verify with smoke tests after changes (see
 | Command | Purpose |
 |---|---|
 | `npm run dev` | Start the Turbopack dev server |
-| `npm run build` | Production build; compiles + type-checks + generates 172 static pages |
+| `npm run build` | Production build; compiles + type-checks + SSG (901 company pages) |
 | `npm start` | Serve the production build (`next start`) |
 | `npm run lint` | ESLint over the project |
+| `npm test` | Vitest suite (factor snapshot/lookup + engine; 20 tests) |
 | `npm run db:seed` | (Optional) Re-seed the Postgres mirror from `src/lib` — needs `DATABASE_URL` |
+| `npm run factor:import` | Import the GQVM workbook into the factor tables (needs `DATABASE_URL`) |
+| `npm run factor:snapshot` | Regenerate `src/lib/factor/data.ts` + `backtest.ts` from the DB |
+| `npm run factor:optimize` | Exploration-only optimizer search (reports, does not write) |
 
 ## Environment Variables
 
@@ -123,32 +131,38 @@ src/
     latest-research/   # Recently updated reports
     coverage-universe/ # Full company list
     sectors/           # Sector index + [slug] sector page
-    company/[slug]/    # 133 SSG report pages (JSON-LD + ReportToc; bespoke note or generic ReportContent)
-    api/               # Read-only JSON API: health, companies, companies/[slug]
+    company/[slug]/    # 901 SSG pages: 133 reports (bespoke note or generic ReportContent) + 768 GQVM factor pages
+    screener/          # Factor screener over the NSE-900 snapshot
+    backtest/          # Parametric backtest UI + live FY2026 portfolio
+    api/               # Read-only JSON API: health, companies, companies/[slug], factor/backtest
     not-found.tsx      # 404
     sitemap.ts         # sitemap.xml (metadataBase-driven)
     robots.ts          # robots.txt
-  components/          # 15 reusable components (6 client, 9 server)
+  components/          # 20 reusable components (8 client, 12 server)
   lib/
     companies.ts       # 133-company dataset + helpers (build-time source of truth)
     sectors.ts         # 23-sector dataset + helpers
     report.ts          # 25-section framework + report math helpers
     notes/             # Bespoke research notes: types.ts, trent.ts, index.ts (ADR-012)
+    factor/            # GQVM factor layer: data.ts/backtest.ts snapshots, engine.ts, company.ts, params.ts, ric.ts
     db.ts              # server-only Postgres pool + query helpers (ADR-011)
     store.ts           # hybrid loaders: DB-first, static fallback
 db/
   schema.sql           # Postgres schema (sectors/companies/report_sections)
 scripts/
   db/seed.ts           # npm run db:seed — truncate + re-seed from src/lib
-public/                # Static assets
+  factor-model/        # Factor pipeline: import.ts, snapshot.ts, verify.ts, map-symbols.ts, fetch-logos.ts, optimize.ts
+public/                # Static assets (logos/ = company logos)
 docs/                  # This repository's living documentation (source of truth)
   ARCHITECTURE.md
   API.md
   CHANGELOG.md
   COMPONENTS.md
   DATABASE.md
+  DATA_MODEL.md
   DECISIONS.md
   DEPLOYMENT.md
+  FACTOR_MODEL.md
   OPENCODE.md
   ROADMAP.md
   SECURITY.md
@@ -172,7 +186,7 @@ Repositories are the memory of the project. Every session starts by reading:
 | [`docs/ROADMAP.md`](./docs/ROADMAP.md) | Sprints and vision |
 | [`docs/DATABASE.md`](./docs/DATABASE.md) | The data layer: Company/Sector schemas + the Postgres mirror (schema, seed, hybrid store) |
 | [`docs/API.md`](./docs/API.md) | Route table, JSON-LD, sitemap/robots, and the live `/api/*` JSON API |
-| [`docs/COMPONENTS.md`](./docs/COMPONENTS.md) | All 15 components: props, usage, best practices |
+| [`docs/COMPONENTS.md`](./docs/COMPONENTS.md) | All 20 components: props, usage, best practices |
 | [`docs/STYLING.md`](./docs/STYLING.md) | Design system, tokens, typography, dark mode, responsive, a11y |
 | [`docs/TESTING.md`](./docs/TESTING.md) | Verification strategy and the manual smoke-test checklist |
 | [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) | Hosting, environments, release checklist |
@@ -192,15 +206,19 @@ It implements the conventions in the *Institutional Equity Research Manual*
 - **Synthetic financials.** Historical reconstructions and forward estimates
   (`src/lib/report.ts`) are model-implied from each company's headline fields
   and labelled `(E)` / `[E]`. They are *not* pulled from a live data feed.
-  **Exception (v0.7.0):** the Trent row and its bespoke note use verified
-  primary-source figures (disclosed FY22–FY26/Q1-FY27 data; consensus from
-  in.marketscreener). Real-data enrichment for the rest is the top roadmap
-  item (`docs/ROADMAP.md`).
+  **Exception (v0.7.0+):** the 33 bespoke companies have rows and notes using
+  verified primary-source figures; estimates in the notes remain marked
+  `(E)`. Real-data enrichment for the rest is the top roadmap item
+  (`docs/ROADMAP.md`).
+- **Factor symbols/logos partial.** 672 of 900 NSE-900 companies have real
+  NSE symbols and logos; delisted/renamed entities render a deterministic
+  initials fallback.
 - **Static content root.** Pages are generated from `src/lib` TS modules; the
   Postgres mirror is a re-seeded snapshot (not a CMS). No persistence, no
   authentication, no write endpoints.
-- **No automated test runner** yet — verification is `lint` + `build` +
-  a documented manual smoke pass (`docs/TESTING.md`).
+- **Unit tests cover the factor layer only** (Vitest, 20 tests); report math
+  and formatters remain on lint + build + a documented manual smoke pass
+  (`docs/TESTING.md`).
 
 ## License
 

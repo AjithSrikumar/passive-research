@@ -255,7 +255,7 @@
 - **Date:** 2026-08-07
 - **Context:** The site is static by design (ADR-002/008); analysts asked
   whether the project could "connect a database." The static TS modules
-  remain the build-time source of truth for all 172 pages.
+  remain the build-time source of truth for all ~900+ pages.
 - **Problem:** (a) No DB-backed story for programmatic/API consumers; (b)
   the dataset lives only in code, so no external tooling can query it.
 - **Options:** (a) DB as a full replacement for `companies.ts`/`sectors.ts`
